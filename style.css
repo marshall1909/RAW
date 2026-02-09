@@ -1,0 +1,3654 @@
+/* ==========================================
+   1. DESIGN SYSTEM & BASE
+   ========================================== */
+:root {
+    --bg-main: #0f0f12;
+    --bg-menu:  rgba(10, 10, 10, 0.9);
+    --bg-card: rgba(26, 25, 25, 0.838);
+    --bg-card-dark: rgba(22, 21, 21, 0.824); 
+    --bg-card-light: rgba(132, 131, 131, 0.039);
+    --bg-input: #1a1a1e;
+    --text-high: #f5f5f7;
+    --text-mid: #9898a0;
+    --text-low: #5c5c66;
+    --accent: #8f0c26;
+    --accent-glow: rgba(180, 45, 70, 0.6);
+    --accent-dim: rgba(180, 45, 70, 0.1);
+    --gold: #d4af37; 
+    --border: rgba(255, 255, 255, 0.08);
+    --shadow: 0 8px 15px -5px rgba(0, 0, 0, 0.6);
+    --push: #742f1d;
+    --pull: #1d2d74;
+    --beine: #24741d;
+
+    --radius-main: 16px;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    -webkit-tap-highlight-color: transparent;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    background-color: var(--bg-main); /* Deine dunkle Grundfarbe */
+    /* Ein ganz dezenter Verlauf für Tiefe */
+    background: radial-gradient(circle at center, #1a1a1a 0%, #0a0a0a 100%);
+    color: var(--text-high);
+    overflow-x: clip; /* Verhindert horizontales Scrollen */
+    overscroll-behavior-y: contain;
+    padding-bottom: 85px; 
+    min-height: 100dvh; /* Verhindert Layout-Shifts beim Scrollen auf mobilen Geräten */
+}
+
+body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    background-image: radial-gradient(rgba(152, 26, 26, 0.349) 1px, transparent 1px);
+    background-size: 10px 10px; /* Punktabstand */
+    background-position: center;
+    /* Ein leichter Verlauf, damit die Punkte nach außen hin verschwinden */
+    -webkit-mask-image: radial-gradient(ellipse at center, black 0%, transparent 60%);
+    mask-image: radial-gradient(ellipse at center, black 0%, transparent 80%);
+}
+
+.hidden { display: none !important; }
+
+/* Verhindert das Scrollen des Hintergrunds */
+body.modal-open {
+    overflow: hidden;
+    height: 100vh;
+}
+
+main {
+    flex: 1;
+    width: 100%;
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px 15px 0 15px;
+    box-sizing: border-box;
+}
+
+footer {
+    width: 100%;
+}
+
+/* ====================================================================================
+                            1. UNIVERSAL CLASSES / TEMPLATES
+   ==================================================================================== */
+   
+/* ==================================================
+1.1 DAS KARTEN-TEMPLATE
+================================================== */
+.card-template {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-main); /* Vereinheitlicht */
+    padding: 16px;
+    box-shadow: var(--shadow);
+    position: relative;
+    overflow: hidden;
+    transition: all 0.2s ease;
+    display: flex;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* 1.1.2 MODIFIER: AKZENT-RÄNDER */
+.card-accent-left {
+    border-left: 6px solid var(--text-mid);
+}
+
+/* Farben überschreiben die Basis, da sie spezifischer/später definiert sind */
+.card-accent-left.border-push  { border-left-color: var(--push); }
+.card-accent-left.border-pull  { border-left-color: var(--pull); }
+.card-accent-left.border-legs  { border-left-color: var(--beine); }
+.card-accent-left.border-gold  { border-left-color: var(--gold); }
+.card-accent-left.border-accent{ border-left-color: var(--accent); }
+
+/* 1.1.3 INTERAKTIONEN */
+.card-clickable {
+    cursor: pointer;
+    user-select: none; /* Verhindert Textmarkierung beim schnellen Klicken am Handy */
+}
+
+/* Hover/Active zusammengefasst - sauberer Code */
+.card-clickable:hover,
+.card-clickable:active {
+    transform: scale(0.98);
+    background: rgba(255, 255, 255, 0.05);
+}
+   
+/* ==========================================
+   1.2 SWIPE-CARDS
+   ========================================== */
+   
+.swipe-card-wrapper {
+    position: relative;
+    overflow: hidden;
+    margin: 0 auto 15px auto; 
+    border-radius: var(--radius-main); /* Vereinheitlicht */
+    max-width: 500px;
+    width: 95%;
+    transition: background-color 0.5s ease;
+}
+
+.swipe-card {
+    width: 100% !important; 
+    margin: 0 !important;
+    max-width: none !important;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-main); /* Vereinheitlicht */
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    border-left: 4px solid var(--accent);
+    position: relative;
+    z-index: 2;
+    box-shadow: var(--shadow);
+    transition: transform 0.2s ease-out;
+}
+
+.delete-hint {
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: white;
+    font-weight: bold;
+    z-index: 1; /* Hinter der Card */
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    opacity: 0;
+    transition: opacity 0.1s ease;
+}
+
+.swipe-card-content {
+    flex-grow: 1;
+    text-align: left;
+}
+
+.swipe-card-title {
+    margin: 0 0 5px 0;
+    font-size: 1.05rem;
+    color: var(--text-high);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.swipe-card-meta {
+    display: flex;
+    flex-wrap: wrap; /* Falls es auf kleinen Handys zu eng wird */
+    gap: 12px;
+    font-size: 0.85rem;
+    color: var(--text-mid);
+}
+
+.swipe-card-meta span {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.swipe-card-meta i {
+    color: var(--gold);
+    width: 14px; /* Fixe Breite damit Icons untereinander fluchten */
+    text-align: center;
+}
+
+.swipe-card-actions {
+    display: flex;
+    gap: 15px;
+    margin-left: 10px;
+}
+
+.swipe-card-actions:hover {
+    transform: scale(0.95);
+}
+
+.swipe-card-actions:active {
+    transform: scale(0.95);
+}
+
+/* ==========================================
+   1.3 MODAL CARDS
+   ========================================== */
+
+.modal-card {
+    background: var(--bg-card);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    width: 85%;
+    max-width: 350px;
+    padding: 40px 25px 25px 25px;
+    
+    /* Wir nutzen den Main-Radius, machen ihn für Modals aber 1.5x größer 
+       Das sieht bei großen Modals meist harmonischer aus. */
+    border-radius: calc(var(--radius-main) * 1.5); 
+    
+    border: 1px solid var(--border);
+    text-align: center;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+    
+    /* Fixierte Zentrierung */
+    position: fixed; 
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 9999;
+}
+
+#format-modal, #confirm-modal {
+    z-index: 9999; /* Höher als das Detail-Overlay */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-icon {
+    font-size: 2.5rem;
+    color: var(--accent);
+    margin-bottom: 15px;
+    display: block; /* Sicherstellen, dass es eine eigene Zeile einnimmt */
+}
+
+#modal-title {
+    font-size: 1.4rem;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    font-weight: 800;
+    color: var(--text-high);
+}
+
+#modal-message {
+    color: var(--text-mid);
+    margin-bottom: 25px;
+    line-height: 1.5;
+}
+
+/* Modal Buttons & Interaktion */
+.modal-buttons {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    margin-top: 10px;
+}
+
+.modal-btn {
+    flex: 1;
+    padding: 14px;
+    border-radius: 12px;
+    border: none;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.1s, filter 0.2s;
+    user-select: none;
+}
+
+.modal-btn:active { 
+    transform: scale(0.95); 
+}
+
+.modal-btn.primary { 
+    background: var(--accent); 
+    color: white; 
+}
+
+.modal-btn.secondary { 
+    background: var(--bg-input); 
+    color: var(--text-mid); 
+}
+
+/* Der kleine "Edit/Delete" Button oben rechts (z.B. in der History) */
+#edit-delete-btn {
+    position: absolute;
+    display: flex;
+    top: 10px;
+    right: 10px;
+    font-size: 1rem;
+    color: var(--accent);
+    opacity: 0.5;
+    transition: all 0.2s ease;
+    padding: 8px;
+    background: transparent;
+    border: none;
+}
+
+#edit-delete-btn:hover {
+    opacity: 1;
+    color: var(--accent);    
+}
+
+#edit-delete-btn:active {
+    opacity: 1;
+    color: var(--accent);
+    transform: scale(0.9);
+}
+
+
+/* EQUIPMENT SELECTION (Innerhalb des Modals) */
+
+/* 1. Das Raster für die Icons */
+.equipment-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin: 15px 0;
+}
+
+/* 2. Die einzelnen Optionen */
+.eq-option {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 5px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.eq-option i {
+    font-size: 25px; 
+    margin-top: 5px;   
+    color: #aaa; /* Dezente Farbe im inaktiven Zustand */
+}
+
+.eq-option span {
+    font-size: 0.6rem;
+    text-transform: uppercase;
+}
+
+/* 3. Der aktive Zustand (wird später per JS vergeben) */
+.eq-option.active {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: #fff; /* Oder deine Akzentfarbe */
+}
+
+.eq-option.active i {
+    color: #fff;
+}
+
+.modal-card .eq-svg-icon-filter {
+    width: 30px;
+    height: 30px;
+    display: block;
+    opacity: 0.6;
+}
+
+.eq-option.active .eq-svg-icon-filter {   
+    opacity: 1;
+}
+
+
+/* MODAL EXPORT FORMAT */
+
+.modal-buttons.vertical {
+    flex-direction: column;
+    gap: 10px;
+}
+
+.modal-buttons.vertical .modal-btn {
+    width: 100%;
+    justify-content: center;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Optional: Den primären Buttons noch mehr "Wumms" geben */
+.modal-btn.primary {
+    background: var(--accent); /* Dein Rot/Orange */
+    color: white;
+}
+
+.modal-btn.secondary {
+    background: var(--bg-card-light); /* Oder dein Gold/Blau */
+    border: 1px solid var(--border);
+}
+
+
+.modal-btn.ghost {
+    background: transparent;
+    border: 1px solid var(--border); /* Dezenter Rahmen */
+    color: var(--text-mid);
+    margin-top: 10px;
+    padding: 10px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    transition: all 0.2s ease;
+}
+
+.modal-btn.ghost:hover {
+    background: rgba(255, 255, 255, 0.05); /* Minimaler Glanz */
+    color: var(--text-high);
+    border-color: var(--text-low);
+}
+
+.modal-btn.ghost:active {
+    transform: scale(0.98);
+}
+
+
+
+
+
+/* ==========================================
+   1.4 ACCORDION CHEVRON
+   ========================================== */
+/* Universelle Chevron-Rotation */
+.accordion-header i.fa-chevron-down {
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: inline-block; /* Wichtig, damit die Rotation sauber um die Achse läuft */
+}
+
+/* Wenn der Header aktiv ist, dreht sich das Icon darin */
+.accordion-header.active i.fa-chevron-down {
+    transform: rotate(180deg);
+}
+
+/* ==========================================
+   1.5 CALL TO ACTION BUTTONS
+   ========================================== */
+
+.cta-button-red {
+    display: inline-block; /* Ersetzt block + fit-content für bessere Platzierung */
+    min-width: 100px;
+    background: linear-gradient(180deg, var(--accent) 0%, #340a12 100%);
+    color: var(--text-high);
+    border: 2px solid rgba(36, 3, 3, 0.742);
+    border-radius: var(--radius-main);    
+    /* Sauberer Klickbereich */
+    padding: 10px 15px; 
+    font-size: 0.9rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 1px;    
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: center;
+    text-decoration: none;
+    user-select: none;
+}
+
+.cta-button-red:active {
+    transform: scale(0.96);
+    filter: brightness(1.2); /* Etwas stärkeres Feedback am Handy */
+}
+
+/* Spezial-Variante: "Set Speichern" (Die große Fläche unten im Overlay) */
+.save-cta {
+    display: block;
+    width: calc(100% - 40px); 
+    margin: 10px 20px; /* Margin etwas entspannt */
+    padding: 16px;
+    background: transparent; 
+    color: var(--text-high); 
+    border: 2px solid var(--accent);
+    border-radius: var(--radius-main); /* Nutzt jetzt unser System */
+    font-weight: 800; 
+    font-size: 0.9rem;
+    text-transform: uppercase; 
+    letter-spacing: 2px;
+    cursor: pointer;
+}
+
+/* Spezial-Variante: Abbrechen (Rot-Alarm) */
+#cancel-edit-btn {
+    display: block; 
+    width: calc(100% - 40px); 
+    margin: 15px 20px;
+    padding: 12px; 
+    background-color: rgba(255, 68, 68, 0.05); /* Leichter Schimmer im Hintergrund */
+    color: #ff4444; 
+    border: 2px solid #ff4444; 
+    border-radius: 8px; 
+    font-weight: bold;
+    text-transform: uppercase; 
+    cursor: pointer;
+}
+
+/* ==========================================
+   1.5 QUICK-RESUME BUTTON
+   ========================================== */
+
+#quick-resume-btn {
+    position: fixed;
+    bottom: 90px; /* Über der Bottom-Nav */
+    right: 20px;
+    width: 55px;
+    height: 55px;
+    background: rgba(20, 20, 20, 0.9);
+    border: 1px solid var(--accent);
+    border-radius: 50px;    
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 999;
+    box-shadow: 0 0 15px rgba(211, 47, 47, 0.4);
+    backdrop-filter: blur(10px);
+    cursor: pointer;
+    animation: slideInRight 0.3s ease-out;
+}
+
+.resume-icon {
+    font-size: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#resume-ex-name {
+    font-size: 0.7rem;
+    font-weight: 800;
+    color: #fff;
+    text-transform: uppercase;
+    margin-right: 10px;
+    max-width: 100px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.resume-icon {
+    width: 20px;
+    height: 20px;
+    fill: var(--accent);
+}
+
+@keyframes slideInRight {
+    from { transform: translateX(100px); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+
+
+
+/* ====================================================================================
+                                    2. HEADER
+   ==================================================================================== */
+
+header {
+    /* Safe-Area + kompaktes Padding */
+    padding: calc(env(safe-area-inset-top) + 0px) 15px 0 15px;   
+    backdrop-filter: blur(15px);       /* Der Weichzeichner für den Hintergrund */
+    -webkit-backdrop-filter: blur(15px); /* Support für Safari */
+    display: grid;
+    grid-template-columns: 80px 1fr 80px; /* Links Logo, Mitte flexibel, Rechts Button */
+    width: 100%;
+    box-sizing: border-box;
+    align-items: center; 
+    justify-content: space-between; 
+    border-bottom: 2px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5), 
+                0 1px 0 rgba(211, 47, 47, 0.2); 
+    border-image-source: linear-gradient(to right, transparent, var(--accent), transparent);
+    border-image-slice: 1;    
+    position: sticky;    
+    z-index: 1000;
+    min-height: 70px;
+    top: 0;
+    
+    background-color: var(--bg-menu);
+    background-image: 
+        radial-gradient(rgba(160, 9, 9, 0.187) 0.5px, transparent 0.5px),
+        linear-gradient(to bottom, rgba(152, 26, 26, 0.155) 0%, transparent 100%);
+    background-size: 4px 4px, 100% 100%; /* Viel dichter als die 10px im Body */
+}
+
+.header-top {
+    /* Kein width: 100% mehr, damit Platz für den Button bleibt */
+    grid-column: 1;
+    display: flex;
+    align-items: center;
+    height: 100%;
+}
+
+/* ==========================================
+   2.2 LOGO
+   ========================================== */
+
+.app-logo {
+    height: 50px;
+    /* FIX: Breite explizit setzen, damit sie animierbar ist */
+    width: auto; 
+    opacity: 1;
+    transform: translateX(0) scale(1);
+    /* Transition für ALLE relevanten Werte */
+    transition: 
+        transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), 
+        opacity 0.4s ease,
+        width 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+        margin 0.5s ease;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+}
+
+.logo-animate-out {
+    /* WICHTIG: KEIN display: none oder block hier! */
+    opacity: 0 !important;
+    transform: scale(0.5) translateX(-100px) !important;
+    pointer-events: none;
+}
+
+/* ==========================================
+   2.3 SESSION INFO & TIMER
+   ========================================== */
+
+.idle-title {
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 2px;
+    color: var(--accent); /* Dein Rot */
+    text-transform: uppercase;
+}
+
+.header-clock-container {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    display: flex;
+    flex-direction: column; 
+    align-items: center;
+    transform: translate(-50%, -50%);
+    font-family: 'JetBrains Mono', monospace;    
+    font-weight: 500;
+    color: #fff; /* Oder deine Akzentfarbe */
+    letter-spacing: 1px;
+    opacity: 0; /* Standardmäßig aus */
+    transition: opacity 0.2s ease;
+    pointer-events: none;
+    z-index: 10;
+    filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.1));
+}
+
+.clock-label {    
+    font-size: 0.6rem; /* Sehr klein */
+    font-weight: 500;
+    color: var(--text-muted, #888); /* Dezent grau */
+    letter-spacing: 3px; /* Weit auseinander für den Look */
+    line-height: 1;
+    margin-bottom:0; 
+    text-align: center;  
+}
+
+.header-clock {    
+    font-size: 1.8rem; /* Die Größe gehört hier hin, nicht in den Container */
+    font-weight: 500;
+    color: #fff;
+    letter-spacing: 1px;
+    filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.2));
+    line-height: 1;
+}
+
+/* Die Uhr erscheint NUR im Dashboard-Modus */
+/* Erscheinen im Dashboard-Modus */
+header.is-dashboard .header-clock-container {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+}
+
+.idle-subtitle {
+    font-size: 0.6rem;
+    letter-spacing: 1px;
+    color: var(--text-mid);
+    font-weight: 400;
+}
+
+.session-details {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.session-title {
+    color: rgba(255, 255, 255, 0.5); /* Etwas dezenter als die Uhr */
+    text-transform: uppercase;
+    font-size: 0.6rem;
+    font-weight: 400;
+    letter-spacing: 2px;
+    color: #ff4d4d; /* Ein helleres, stechendes Rot */
+    text-shadow: 0 0 8px rgba(255, 77, 77, 0.6);
+    
+}
+
+.session-title.dashboard-mode {
+    color: rgba(255, 255, 255, 0.5); /* Etwas dezenter als die Uhr */
+    text-transform: uppercase;
+    font-size: 0.5rem;
+    font-weight: 400;
+    letter-spacing: 1px;
+    color: #ff4d4d; /* Ein helleres, stechendes Rot */
+    text-shadow: 0 0 8px rgba(255, 77, 77, 0.6);
+    
+}
+
+.timer-display {
+    font-family: 'JetBrains Mono', 'Courier New', monospace; /* Mono-Font verhindert Springen der Zahlen */
+    color: #d32f2f; /* Dein aggressives Rot */
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: #ffffff;
+    line-height: 1;
+    margin-top: 5px;
+    text-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+}
+
+/* ==========================================
+   2.4 HEADER BUTTONS (START/STOP SESSION)
+   ========================================== */
+
+.header-info {
+    grid-column: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Horizontale Zentrierung des Texts */
+    justify-content: center;
+    text-align: center;
+    width: 100%;
+    height: 100%;    
+    transform: translateX(0px);
+    transition: 
+        transform 0.6s cubic-bezier(0.2, 1, 0.3, 1), 
+        filter 0.4s ease, 
+        opacity 0.5s ease; 
+        
+}
+
+/* Der verschobene Modus für die Info-Einheit */
+.header-info.dashboard-mode {
+    transform: translateX(-100px);    
+    align-items: flex-start; /* Text nach links ausrichten */
+    text-align: left;
+    padding-left: 15px;      /* Kleiner Abstand zum Rand */
+         
+}
+
+
+
+
+/* 3. Spalte: Die Buttons */
+.header-actions {
+    grid-column: 3;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    height: 70px;    
+}
+
+.play-stop-btn-container {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, #d83b3b, #4d0707);
+    border: solid 2px var(--accent);
+    display: flex;    
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    position: relative;
+    /* Roter Glow passend zu deinen Gainz-Vibes */
+    box-shadow: 0 0 15px rgba(211, 47, 47, 0.4), 
+                inset 0 0 8px rgba(255, 255, 255, 0.2);
+    transition: all 0.2s ease;
+    -webkit-tap-highlight-color: transparent;
+    animation: SlowPulse 4s ease-out forwards infinite;
+    transition: transform 0.1s ease-out, filter 0.1s ease-out;
+}
+
+/* Das Play-Dreieck rein aus CSS */
+.play-icon {
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 8px 0 8px 14px;
+    border-color: transparent transparent transparent #ffffff;
+    margin-left: 3px; /* Optische Korrektur, damit es zentriert wirkt */
+    filter: drop-shadow(0 0 2px rgba(0,0,0,0.3));    
+}
+
+/* Feedback beim Drücken */
+.play-stop-btn-container:active {
+    transform: scale(0.9);
+    box-shadow: 0 0 5px rgba(211, 47, 47, 0.6);
+}
+
+/* Das Stopp-Icon (Quadrat) */
+.stop-icon {
+    width: 14px;
+    height: 14px;
+    background-color: #ffffff;
+    border-radius: 2px;
+}
+
+/* ==========================================
+   2.5 TOP NAVIGATION TABS
+   ========================================== */
+
+.top-nav {
+    display: flex;
+    width: 100%;  
+    justify-content: center;
+    gap: 10px; /* Etwas mehr Gap für dickere Finger */    
+    margin-bottom: 20px;
+    top:70px;
+    padding: 0;
+    position: sticky;    
+    align-items: center;
+    background: var(--bg-menu);
+    backdrop-filter: blur(15px);       /* Der Weichzeichner für den Hintergrund */
+    -webkit-backdrop-filter: blur(15px); /* Support für Safari */ 
+    min-height: 50px;
+    z-index: 999;       
+}
+
+.top-nav::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    box-shadow: 0 -2px 10px var(--accent-glow);
+}
+
+/* Trennstriche zwischen den Tab-Buttons */
+.top-nav .divider {
+    width: 1px;
+    height: 30px;
+    background: linear-gradient(
+        to bottom, 
+        transparent, 
+        rgba(255, 255, 255, 0.4), 
+        transparent
+    );
+    flex-shrink: 0; /* Verhindert, dass der Strich bei Platzmangel schrumpft */
+    pointer-events: none;
+}
+
+.tab-btn {
+    background: none !important;
+    border: none !important;
+    color: var(--text-mid);
+    font-size: 1.4rem; /* Leicht reduziert für bessere Mobile-Balance */
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 2px;    
+    cursor: pointer;
+    transition: color 0.3s ease, transform 0.2s ease;
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 40px; 
+    padding: 0 15px;
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* Feedback beim Drücken */
+.tab-btn:active {
+    transform: scale(0.9); 
+    color: var(--accent);
+    transition: transform 0.1s ease;
+}
+
+.tab-btn.active {
+    color: var(--accent);
+    filter: drop-shadow(0 0 10px var(--accent-glow))    
+}
+
+/* EQUIPMENT-FILTER */
+
+
+
+/* Anpassung der Filter-Bar, damit das Icon links klebt, während die Chips scrollen */
+.filter-bar {
+    display: flex;
+    align-items: center; /* Wichtig, damit das Icon auf einer Höhe mit den Chips ist */
+    gap: 10px;
+    padding: 10px;
+    overflow-x: auto;
+    justify-content: flex-start; /* Geändert von center, falls es viele Icons werden */
+    margin-bottom: 0px;
+    scrollbar-width: none; /* Versteckt Scrollbar auf Firefox */
+}
+
+.filter-bar::-webkit-scrollbar {
+    display: none; /* Versteckt Scrollbar auf Chrome/Safari */
+}
+
+.filter-label-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-right: 5px; /* Abstand zu den Chips */
+    color: var(--text-dim); /* Dezentes Grau/Farbe deiner Wahl */
+    font-size: 1.1rem;
+    opacity: 0.7;
+}
+
+button.filter-chip:first-of-type {
+    margin-left: auto;
+}
+
+button.filter-chip:last-of-type {
+    margin-right: auto;
+}
+
+button.filter-chip {
+    width: 50px;
+    height: 30px;
+    display: flex;
+    align-items: center;      /* Vertikal mittig */
+    justify-content: center;   /* Horizontal mittig */
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: rgba(0, 0, 0, 0.1);
+    color: var(--text-mid);
+    font-size: 1.0rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;    
+}
+
+button.filter-chip.active {
+    color: var(--text-high);
+    font-size: 1.1rem;
+}
+
+/* Alle Icons im Filter standardmäßig weiß */
+.eq-svg-icon-filter {
+    width: 20px;
+    height: 20px;
+    display: block;
+    filter: brightness(0) invert(1); /* Macht das SVG immer weiß */
+    opacity: 0.4;
+    transition: all 0.3s ease;
+}
+
+.filter-chip.active .eq-svg-icon-filter {
+    width: 25px;
+    height: 25px;
+    display: block;
+    filter: brightness(0) invert(1); /* Macht das SVG immer weiß */
+    opacity: 1;
+}
+
+.filter-chip i {
+    color: var(--text-low);
+    font-size: 1.1rem;
+    transition: all 0.3s ease;
+}
+
+.filter-chip.active i {
+    color: var(--text-high);
+    font-size: 20px;
+}
+
+/* Der Button-Hintergrund */
+.filter-chip {
+    background-color: #444; /* Ein dunkles Grau für inaktive Buttons */
+    border: none;
+    border-radius: 8px;
+    padding: 10px 15px;
+    cursor: pointer;    
+    transition: background-color 0.2s ease;
+}
+
+.filter-chip.active {
+    background: var(--accent); /* Deine Hauptfarbe */
+    color: white;
+    border-color: var(--accent);
+    box-shadow: 0 0 10px rgba(var(--accent-rgb), 0.01);
+}
+
+/* ==========================================
+   2.6 BEASTMODE (ON START)
+   ========================================== */
+
+.beastmode-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(0px);
+    /* -webkit-backdrop-filter: blur(0px); Safari Support */
+    pointer-events: auto;
+    opacity: 0;
+    transition: backdrop-filter 0.3s ease, opacity 0.3s ease;
+    /* will-change: backdrop-filter, opacity; Performance-Boost */
+}
+
+.beastmode-text {
+    text-align: center;
+    font-family: 'Impact', 'Arial Black', sans-serif;
+    line-height: 0.9; /* Etwas enger wirkt bei Impact noch wuchtiger */
+    color: white;
+    text-shadow: 0 0 20px rgba(0,0,0,0.5), 0 0 40px var(--accent);
+    transform: scale(0.2);
+    will-change: transform;
+}
+
+.beastmode-text .line1 {
+    font-size: 15rem;
+    display: block;
+    letter-spacing: 2px;
+}
+
+.beastmode-text .line2 {
+    font-size: 10rem;
+    display: block;
+    color: var(--accent);
+    margin-top: 10px;
+}
+
+/* Hilfsklasse für die JS-Animation */
+.ui-scale-up {
+    transition: transform 0.4s ease-out;
+    transform: scale(1.02);
+}
+
+/* ==========================================
+   2.7 MENÜ (BOTTOM NAVIGATION)
+   ========================================== */
+
+#main-menu-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    /* Höhe + Safe Area für moderne iPhones/Pixel */
+    height: calc(70px + env(safe-area-inset-bottom));
+    background: var(--bg-menu);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    z-index: 9999;    
+    /* Padding unten fängt die Home-Bar von iOS/Android ab */
+    padding-bottom: env(safe-area-inset-bottom);
+}
+
+#main-menu-bar .divider {
+    width: 1px;
+    height: 50px;
+    background: linear-gradient(
+        to bottom, 
+        transparent, 
+        rgba(255, 255, 255, 0.4), 
+        transparent
+    );
+    flex-shrink: 0; /* Verhindert, dass der Strich bei Platzmangel schrumpft */
+    pointer-events: none;
+}
+
+.menu-link {
+    position: relative;
+    flex: 1;
+    height: 70px; /* Feste Höhe für zentrierte Icons */
+    background: none;
+    border: none;
+    outline: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* Versteckt die Beschriftung, falls vorhanden (Clean Look) */
+.menu-link span {
+    display: none;
+}
+
+/* 1. Grundzustand Inaktiv */
+.menu-link i {
+    font-size: 1.8rem;
+    color: var(--text-mid);
+    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), color 0.2s;
+}
+
+/* 2. Aktiv-Zustand */
+.menu-link.active i {
+    color: var(--accent);
+    filter: drop-shadow(0 0 10px var(--accent-glow));
+}
+
+/* 3. Tipp-Feedback (Scale down beim Drücken) */
+.menu-link:active i {
+    transform: scale(0.85);
+}
+
+/* Roter Shine-Strich oben */
+#main-menu-bar::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    box-shadow: 0 -2px 10px var(--accent-glow);
+}
+
+/* ====================================================================================
+                            3. DASHBOARD & STATS
+   ==================================================================================== */
+
+/* ==========================================
+   3.1 GREETING (Deaktiviert, aber im Code behalten)
+   ========================================== */
+
+
+.dashboard-logo {
+    height: 150px;
+    /* FIX: Breite explizit setzen, damit sie animierbar ist */
+    width: auto; 
+    opacity: 1;
+    transform: translateX(0) scale(1);
+    /* Transition für ALLE relevanten Werte */
+    transition: 
+        transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), 
+        opacity 0.4s ease,
+        width 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+        margin 0.5s ease;
+    filter: drop-shadow(0 2px 4px rgba(212, 7, 7, 0.553));
+    margin-top: 20px;
+}
+
+.dashboard-logo:active {
+    filter: drop-shadow(0 0 8px rgba(225, 2, 2, 0.6)) 
+            drop-shadow(0 0 15px rgba(255, 255, 255, 0.3));
+    transform: scale(1.2);
+}
+
+.dashboard-title p {
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 2px;
+    color: var(--accent); /* Dein Rot */
+    text-transform: uppercase;
+}
+
+.dashboard-greeting {
+    position: relative;
+    display: block;
+    text-align: center;
+    margin: 40px 0 20px 0;
+    padding: 25px 0;
+    font-size: 1.0rem;
+    font-weight: 900;
+    color: var(--text-high);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    overflow: hidden; /* Verhindert, dass der 150% weite Shine horizontal scrollt */
+}
+
+/* Gemeinsame Basis für die Shine-Linien */
+.dashboard-greeting::before,
+.dashboard-greeting::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 150%;
+    height: 20px;
+    background-repeat: no-repeat;
+    pointer-events: none;
+}
+
+/* Oberer Streifen: Shine strahlt nach oben */
+.dashboard-greeting::before {
+    top: 0;
+    background: 
+        linear-gradient(90deg, transparent, var(--accent), transparent) no-repeat bottom / 100% 1px,
+        radial-gradient(ellipse at bottom, rgba(180, 45, 70, 0.4) 0%, transparent 70%) no-repeat bottom / 100% 100%;
+}
+
+/* Unterer Streifen: Shine strahlt nach unten */
+.dashboard-greeting::after {
+    bottom: 0;
+    background: 
+        linear-gradient(90deg, transparent, var(--accent), transparent) no-repeat top / 100% 1px,
+        radial-gradient(ellipse at top, rgba(180, 45, 70, 0.4) 0%, transparent 70%) no-repeat top / 100% 100%;
+}
+
+/* Container & Animations-Logik */
+#content-dashboard {
+    width: 100%;
+    text-align: center;
+}
+
+#greeting-text {
+    display: inline-block;
+    transition: opacity 0.8s ease-in-out, transform 0.8s ease-in-out;
+    will-change: opacity, transform;
+}
+
+.text-hidden {
+    opacity: 0 !important;
+    transform: translateY(5px);
+}
+
+/* ==========================================
+   3.2 CONTENT (Dashboard Cards)
+   ========================================== */
+
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    padding: 15px;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+/* Erbt von .card-template */
+.stat-card {
+    display: flex;
+    flex-direction: column; 
+    justify-content: center;
+    align-items: center; /* Zentrierung für den "Dashboard-Look" */
+    text-align: center;
+    padding: 20px 10px;
+    transition: transform 0.1s ease, box-shadow 0.2s ease;
+}
+
+/* Kraft-Kategorie (Dezenter roter Schimmer) */
+.stat-card.strength {
+    background: linear-gradient(145deg, var(--bg-card), rgba(180, 45, 70, 0.08));
+    border-left: 3px solid var(--accent);
+}
+
+/* Körper-Kategorie (Dezenter blauer Schimmer) */
+.stat-card.body {
+    background: linear-gradient(145deg, var(--bg-card), rgba(74, 144, 226, 0.05));
+    border-left: 3px solid #4a90e2;
+}
+
+/* Volumen-Kategorie (Dezenter Gold/Gelb Schimmer) */
+.stat-card.volume {
+    background: linear-gradient(145deg, var(--bg-card), rgba(212, 175, 55, 0.05));
+    border-left: 3px solid #d4af37;
+}
+
+/* Volumen-Kategorie (Dezenter Gold/Gelb Schimmer) */
+.stat-card.cardio {
+    background: linear-gradient(145deg, var(--bg-card), rgba(212, 175, 55, 0.05));
+    border-left: 3px solid #59d437;
+}
+
+/* Standard Accent-Karte */
+.stat-card.accent {
+    border-left: 4px solid var(--accent);
+    background: linear-gradient(145deg, var(--bg-card), rgba(180, 45, 70, 0.05));
+}
+
+.stat-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--text-mid);
+    margin-bottom: 8px;
+}
+
+.stat-value {
+    font-size: 1.8rem;
+    font-weight: 900;
+    color: var(--text-high);
+    line-height: 1;
+}
+
+.stat-value .unit {
+    font-size: 0.85rem;
+    color: var(--accent);
+    margin-left: 2px;
+    font-weight: 500;
+    text-transform: lowercase;
+}
+
+.stat-meta {
+    font-size: 0.65rem;
+    color: var(--text-mid);
+    margin-top: 8px;
+}
+
+/* Interaktion */
+.clickable-card {
+    cursor: pointer;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.clickable-card:active {
+    transform: scale(0.96);
+    filter: brightness(1.1);
+}
+
+/* ==========================================
+   5. FOCUS PICKER OVERLAY
+   ========================================== */
+
+.picker-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 9999; 
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.picker-overlay.open {
+    display: flex;
+}
+
+.picker-sheet {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    width: 100%;
+    max-width: 450px;
+    max-height: 85vh;
+    border-radius: 24px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: var(--shadow);
+    padding: 20px;
+    overflow-y: auto;
+    animation: modalFadeIn 0.3s ease-out;
+}
+
+.picker-header {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 10px 0 20px 0;
+    position: relative; 
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    margin-bottom: 15px;
+}
+
+.picker-title {
+    font-size: 0.9rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--text-mid);
+}
+
+.picker-close {
+    position: absolute;
+    right: 0;
+    top: 5px;
+    background: rgba(255, 255, 255, 0.05);
+    border: none;
+    color: #fff;
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+/* Der Gruppen-Header - nutzt jetzt zusätzlich .accordion-header */
+.picker-group-header {
+    width: 100%;
+    color: var(--text-mid);
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin: 0;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    background: transparent;
+    padding: 20px 0 10px 0;
+    transition: color 0.3s ease;
+}
+
+/* Die Linien-Optik */
+.picker-group-header::before,
+.picker-group-header::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.15), transparent);
+}
+
+.picker-group-header:hover { color: var(--text-high); }
+.picker-group-header.active { color: var(--accent); }
+
+/* (Hinweis: Die Rotation des Icons i.fa-chevron-down wird durch Template 1.4 gesteuert) */
+
+.picker-group-container {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1), 
+                opacity 0.3s ease;
+}
+
+.picker-group-container.open {
+    max-height: 800px; 
+    padding-bottom: 15px;
+}
+
+/* Die Liste der Übungen */
+.picker-list {
+    display: flex;   
+    flex-direction: column;
+    gap: 5px;
+}
+
+.picker-list-item {
+    display: flex;
+    align-items: center;
+    padding: 12px;
+    border-radius: var(--radius-main);
+    background: rgba(255, 255, 255, 0.02);
+    border-left: 4px solid transparent;
+    transition: all 0.1s ease;
+}
+
+.picker-list-item.group-push { border-left-color: var(--push); }
+.picker-list-item.group-pull { border-left-color: var(--pull); }
+.picker-list-item.group-legs { border-left-color: var(--beine); }
+
+.picker-list-item:active {
+    transform: scale(0.96);
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.picker-list-item i {
+    font-size: 1.8rem;
+    width: 40px;
+    text-align: center;
+    margin-right: 15px;
+    color: var(--text-mid);
+}
+
+.picker-item-name {
+    font-weight: bold;
+    font-size: 1.1rem;
+    color: var(--text-high);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+
+/* ====================================================================================
+                             4. EXERCISE GRID (AKKORDEON)
+   ==================================================================================== */
+
+/* ==========================================
+   4.2 EXERCISE SUB GROUPS TABS
+   ========================================== */
+
+.sub-group-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 12px 25px 12px 0; /* Rechts das Padding direkt hier für das Icon */
+    cursor: pointer;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.sub-group-header h3 {
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+    gap: 15px;    
+    margin-left: 25px;
+    color: var(--text-mid);
+    font-size: 0.95rem; /* Etwas dezenter für Sub-Labels */
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    transition: color 0.4s ease;
+}
+
+/* Aktiver Text-Zustand */
+.sub-group-header.active h3 {
+    color: var(--accent);
+}
+
+/* Die Linie, die nach dem Text kommt */
+.sub-group-header h3::after {
+    content: "";
+    flex: 1;
+    height: 2px;
+    background: linear-gradient(to right, rgba(255, 255, 255, 0.333) 0%, transparent 100%);
+    transition: background-color 0.4s ease;
+}
+
+/* Wenn aktiv: Linie fadet in Akzent-Farbe aus */
+.sub-group-header.active h3::after {
+    background: linear-gradient(to right, var(--accent) 0%, transparent 100%);
+}
+
+/* Chevron Styling */
+.sub-group-header i.accordion-chevron {
+    color: var(--text-mid);
+    font-size: 0.85rem;
+    margin-right: 20px;
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), color 0.3s ease;
+}
+
+.sub-group-header.active i.accordion-chevron {
+    transform: rotate(180deg);
+    color: var(--text-high);
+}
+
+/* Der Container für den Inhalt (Übungs-Buttons) */
+.sub-group .button-grid {
+    display: flex; 
+    flex-wrap: wrap;
+    gap: 5px; /* Ein kleiner Gap zwischen den Buttons ist auf Mobile wichtig */
+    max-height: 0;
+    
+    visibility: hidden;
+    overflow: hidden;
+    opacity: 0;
+    transition: max-height 0.6s cubic-bezier(0.4, 0, 0.2, 1), 
+                opacity 0.6s ease, 
+                padding 0.6s ease;
+                visibility: 0.6s;
+    padding: 0 25px ; /* Alignment mit dem h3 Text */
+}
+
+.sub-group .button-grid.open {
+    max-height: 2000px;
+    opacity: 1;
+    visibility: visible;
+    background: transparent !important;
+    padding-top: 10px;
+    padding-bottom: 0; /* Platz zur nächsten Gruppe */
+}
+
+/*  ==========================================
+            4.3 ÜBUNGSCARDS (NODES)                      
+    ========================================== */
+
+
+.exercise-info-wrapper {
+    display: flex;      /* Schaltet auf Nebeneinander um */
+    align-items: center; /* Zentriert Icon und Text vertikal zueinander */
+    gap: 12px;          /* Abstand zwischen Icon-Badge und Text */
+    flex: 1;            /* Nutzt den verfügbaren Platz links vom Pfeil */
+}
+
+/* Spezifisches Layout für die Übungszeile */
+.exercise-node {
+    display: flex; /* Sicherstellen, dass es Flex ist */
+    align-items: center; 
+    justify-content: space-between; /* Text links, Pfeil/Info rechts */
+    margin: 8px 0; /* Etwas mehr vertikaler Abstand für die "Klick-Präzision" */
+    padding: 12px 15px; /* Mehr Padding für die Daumen-Bedienung */
+    background: var(--bg-card);
+    border-radius: var(--radius-main);
+    transition: transform 0.2s ease, background 0.2s ease;
+    cursor: pointer;
+}
+
+/* Die dicken Kategorie-Balken */
+.exercise-node.border-push { border-left: 6px solid var(--push); }
+.exercise-node.border-pull { border-left: 6px solid var(--pull); }
+.exercise-node.border-legs { border-left: 6px solid var(--beine); }
+
+/* Feedback beim Tap */
+.exercise-node:active {
+    transform: scale(0.97);
+    background: rgba(255, 255, 255, 0.08) !important;
+}
+
+.exercise-icon-badge {
+    width: 40px;
+    height: 40px;
+    background: var(--bg-input);
+    border-radius: 10px; /* Leicht eckig wie moderne Apps */
+    display: flex;
+    align-items: center;
+    justify-content: center;    
+    border: 1px solid var(--border);
+    flex-shrink: 0;  
+    font-size: 1.4rem;
+}
+
+.eq-svg-icon {
+    width: 30px;
+    height: 30px;
+    object-fit: contain;
+    display: block;    
+}
+
+.exercise-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-high);
+}
+
+/* Der "Übung hinzufügen" Button */
+.card-template.exercise-node.add-btn {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    gap: 10px;   
+    border: 1px dashed var(--border);
+    border-left: 1px dashed var(--border); /* Überschreibt die 6px Border */
+    color: var(--text-mid);
+    background-color: var(--bg-card-light);
+    margin: 15px 0;
+    padding: 15px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+
+
+
+
+
+
+/* ====================================================================================
+                        5. WORKOUT OVERLAY CARD & INPUTS
+   ==================================================================================== */
+
+/*  ==========================================
+        5.1 DAS HAUPT-OVERLAY                     
+========================================== */
+
+.overlay {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.7);
+    z-index: 2000;    
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end; 
+    align-items: center;     
+    opacity: 0;
+    visibility: hidden;
+    backdrop-filter: blur(0px);
+    transition: all 0.4s ease;
+    pointer-events: none;
+    overflow-y: auto; /* Erlaubt das Scrollen des gesamten Containers */
+    -webkit-overflow-scrolling: touch; /* Geschmeidiges Scrollen auf iOS */
+}
+
+/* Wenn das Modal/Overlay aktiv ist (Klasse .hidden wird entfernt) */
+.overlay:not(.hidden) {
+    opacity: 1;
+    visibility: visible;
+    backdrop-filter: blur(10px);
+    pointer-events: auto;
+}
+
+/*  ==========================================
+        5.2 DRAG HANDLE, HEADER & BODY                    
+========================================== */
+
+#drag-handle-container, 
+.overlay-header, 
+.overlay-body {
+    position: relative;
+    width: 100%;
+    max-width: 500px;
+    background-color: var(--bg-card-dark);
+    border-left: 1px solid var(--border);
+    border-right: 1px solid var(--border);
+    box-sizing: border-box;
+    /* Startposition: 100% der eigenen Höhe (besser als 100vh) */
+    transform: translateY(100%); 
+    transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+    overflow-y: auto; /* Erlaubt das Scrollen des gesamten Containers */
+    -webkit-overflow-scrolling: touch; /* Geschmeidiges Scrollen auf iOS */
+}
+
+.overlay-body::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background-image: radial-gradient(rgba(152, 26, 26, 0.4) 1px, transparent 1px);
+    background-size: 14px 14px;
+    /* Der Spice: Ein doppelter Masken-Verlauf */
+    -webkit-mask-image: radial-gradient(circle at center, 
+        black 0%, 
+        rgba(0,0,0,0.5) 40%, 
+        transparent 85%);
+    mask-image: radial-gradient(circle at center, 
+        black 0%, 
+        rgba(0,0,0,0.5) 40%, 
+        transparent 85%);
+}
+
+#exercise-overlay.hidden, 
+#input-modal.hidden, 
+#confirm-modal.hidden {
+    display: flex !important;
+    visibility: hidden;
+    opacity: 0;
+    pointer-events: none;
+    /* Hier kein transform, da der Hintergrund fest bleibt */
+    transition: opacity 0.6s ease, visibility 0.6s;
+}
+
+#exercise-overlay.hidden #drag-handle-container, 
+#exercise-overlay.hidden .overlay-header, 
+#exercise-overlay.hidden .overlay-body {
+    transform: translateY(100vh) ;
+    transition: transform 1.5s cubic-bezier(0.25, 1, 0.5, 1) ;
+}
+
+/* Zielposition wenn offen */
+.overlay:not(.hidden) #drag-handle-container,
+.overlay:not(.hidden) .overlay-header,
+.overlay:not(.hidden) .overlay-body {
+    transform: translateY(0);
+}
+
+/* Spezifische Abstände für das Exercise-Overlay */
+#exercise-overlay {
+    padding-bottom: calc(69px + env(safe-area-inset-bottom));
+}
+
+/*  ==========================================
+        5.2 DRAG-HANDLE & HEADER STYLING                  
+========================================== */
+
+/* Drag Handle */
+
+#drag-handle-container {
+    border-top: 2px solid var(--border);
+    border-radius: 24px 24px 0 0;    
+    height: 45px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: grab;
+    margin-top: auto; 
+    flex-shrink: 0;
+}
+
+#drag-handle-container::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    box-shadow: 0 -2px 10px var(--accent-glow);
+}
+
+.drag-handle {
+    width: 40px; height: 5px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+}
+
+/* Overlay Header */
+
+.overlay-header {
+    position: relative;
+    padding: 20px 15px 15px 15px; /* Etwas weniger seitliches Padding für das Icon */
+    display: flex;
+    flex-direction: column;
+    align-items: center;    
+    background-color: var(--bg-card-dark);
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.overlay-header::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    box-shadow: 0 -2px 10px var(--accent-glow);
+}
+
+.header-content-wrapper {
+    width: 100%;
+    padding-right:40px;
+    display: flex;
+    justify-content: center;
+}
+
+.title-row {
+    display: flex;
+    justify-content: space-between; 
+    align-items: center;
+    width: 100%;
+    padding-right: 10px;
+    position: relative; 
+    min-height: 45px;
+    pointer-events: none;
+    /* Das hier ist der Trick: Die title-row muss den ganzen Platz einnehmen */
+}
+
+.title-row::after {
+    content: "";
+    width: 38px; 
+    flex-shrink: 0;
+}
+
+
+#overlay-exercise-icon {
+    /* Kein Absolute mehr nötig mit der Spacer-Methode */
+    width: 50px;
+    height: 50px;
+    border-radius: 10px;    
+    display: flex; 
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    /* Damit es nicht am Rand klebt */
+    margin-right: 10px; 
+}
+
+/* Spezifisch für FontAwesome Icons */
+#overlay-exercise-icon i {
+    font-size: 30px;
+    color: white;
+    /* Verhindert Text-Verschiebungen */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    line-height: 1; /* Wichtig: Font-Line-Height auf 1 setzen */
+    pointer-events: auto;
+}
+
+/* Spezifisch für SVG-Bilder */
+#overlay-exercise-icon img {
+    width: 40px;
+    height: 40px;
+    object-fit: contain; /* Erhält Proportionen */
+    filter: brightness(0) invert(1);
+    pointer-events: auto;
+}
+/* Übungsname */
+
+#current-exercise-name {
+    flex-grow: 1;
+    margin: 0;
+    font-size: 1.4rem;
+    text-align: center;
+    text-transform: uppercase;
+    /* Damit der Name nicht in das Icon/Gear läuft */
+    padding: 0 10px; 
+    pointer-events: auto;
+}
+
+
+
+/* Edit-Button oben rechts */
+
+#edit-exercise-btn {
+    position: absolute;
+    top: 10px;
+    right: 5px;
+    color: var(--text-mid);
+    font-size: 1.2rem; /* Etwas größer, da es jetzt alleine steht */
+    cursor: pointer;
+    padding: 10px; /* Größere Klickfläche für verschwitzte Finger */
+    transition: transform 0.3s ease;    
+}
+
+#edit-exercise-btn:active {
+    transform: rotate(90deg) scale(1.1); /* Cooler Effekt beim Klicken */
+    color: var(--accent);    
+}
+
+.edit-input-field {
+    background: var(--bg-input);
+    color: var(--text-high);
+    border: 1px solid var(--accent);
+    padding: 10px;
+    width: 100%;
+    border-radius: 8px;
+    margin-top: 10px;
+}
+
+
+
+/*  ==========================================
+        5.2 OVERLAY BODY STYLING
+    ========================================== */
+
+.overlay-body {
+    padding: 10px 10px 30px 10px;
+    border-bottom: 1px solid var(--bg-card);
+    height: auto;
+    min-height: 30vh;
+    max-height: 60vh;
+    overflow-y: auto;
+    border-radius: 0;
+}
+
+.input-row { 
+    display: flex; 
+    gap: 10px; 
+    padding: 10px; 
+    width: 100%; 
+    box-sizing: border-box; /* Zwingt das Padding NACH INNEN, damit nichts übersteht */
+}
+
+/* 3. INPUTS & REFS */
+.input-row input {
+    flex: 1; 
+    min-width: 0;
+    background: var(--bg-input); 
+    border: 1px solid var(--border);
+    padding: 18px 5px; 
+    border-radius: 14px; 
+    color: white;
+    font-size: 1.6rem; 
+    font-weight: 800; 
+    text-align: center;
+    transition: border-color 0.2s;
+}
+
+.input-row input:focus {
+    border-color: var(--accent);
+    outline: none;
+}
+
+.ref-box {
+    position: relative;
+    text-align: center;
+    margin: 10px 40px 30px; 
+    padding: 10px 0;
+}
+
+/* Die fadende Linie etwas dezenter machen */
+.ref-box::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: -10%; 
+    width: 120%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    
+}
+
+.ref-box p {
+    font-size: 0.75rem; /* Viel kleinerer Label-Text */
+    color: var(--text-low); /* Dunkleres Grau, damit Gold mehr strahlt */
+    text-transform: uppercase;
+    letter-spacing: 3px; 
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+}
+
+#pb-display { 
+    color: var(--gold); 
+    font-size: 1.0rem; /* Zahl deutlich größer als der Text */
+    font-weight: 900; 
+    font-family: 'Courier New', monospace; /* Monospace für den "Daten"-Look */
+    text-shadow: 0 0 15px rgba(212, 175, 55, 0.4);
+    line-height: 1;
+    margin-top: 3px;
+}
+
+/* ==========================================
+   5.3.1 SET LIST & ACTIONS
+   ========================================== */
+
+.swipe-card.set-specific-card {
+    border-left: 3px solid var(--accent);
+    padding: 12px 15px;
+    margin-bottom: 8px; /* Etwas mehr Luft zum nächsten Satz */
+    display: flex;
+    flex-direction: column;
+    gap: 6px; 
+    background: var(--bg-card);
+    border-radius: 12px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* Obere Zeile: Satz-Nr & Actions */
+.set-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.set-number-badge {
+    font-size: 0.75rem;
+    color: var(--accent);
+    text-transform: uppercase;
+    font-weight: 800;
+    letter-spacing: 1px;
+}
+
+/* Mittlere Zeile: Die "Main Stats" (100 x 5) */
+.set-stats-row {
+    display: flex;
+    align-items: center; /* Zentriert ist sicherer als baseline */
+    font-variant-numeric: tabular-nums; /* Verhindert Wackeln der Zahlen */
+    margin: 4px 0;
+}
+
+.set-weight-display, 
+.set-reps-display {
+    font-size: 1.0rem; /* Ein Tick größer für die Lesbarkeit beim Training */
+    color: var(--text-high);
+    font-weight: 900;
+}
+
+.set-x-separator {
+    color: var(--text-low);
+    font-size: 0.9rem;
+    margin: 0 8px; /* Mehr Platz um das 'x' */
+    font-weight: 400;
+}
+
+/* Untere Zeile: Meta (Pause, Datum, etc.) */
+.set-meta-info {
+    font-size: 0.75rem;
+    color: var(--text-low);
+    padding-top: 8px;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    display: flex;
+    justify-content: flex-start;
+    gap: 12px; /* Mehr Platz zwischen Icon und Text */
+}
+
+/* Actions */
+.set-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.delete-btn-subtle {
+    background: transparent;
+    border: none;
+    color: var(--text-low);
+    opacity: 0.5;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    padding: 4px;
+}
+
+.delete-btn-subtle:hover {
+    opacity: 1;
+    color: var(--accent);
+    transform: scale(1.1);
+}
+
+.delete-btn-subtle:active {
+    transform: scale(0.9);
+}
+
+/* ==========================================
+   6.1 SET LIST & NOTES (UNIFIED TOGGLES)
+   ========================================== */
+
+   /* Die Trigger-Buttons */
+.accordion-header {
+    width: 100%;
+    max-width: 400px;
+    margin-top: 20px; /* Ein bisschen Abstand nach oben */
+    display: flex;
+    flex-direction: row; /* WICHTIG: Alles in eine Zeile */
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    padding: 12px 0;
+    background: transparent;
+    border: none;
+    color: var(--text-mid);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+/* Der Titel-Bereich */
+.exercise-accordion-title {
+    white-space: nowrap; /* Kein Umbruch */
+    display: flex;
+    align-items: center;
+    flex: 1; /* Der Span nimmt den Platz zwischen Text und Chevron ein */
+    gap: 15px;
+}
+
+/* Die Linie im Span */
+.exercise-accordion-title::after {
+    content: "";
+    flex: 1; /* Die Linie füllt den restlichen Platz des Spans aus */
+    height: 1px;
+    /* Gradient von sichtbar (links) nach transparent (rechts) */
+    background: linear-gradient(to right, rgba(255, 255, 255, 0.3), transparent);
+    transition: background 0.3s ease;
+}
+
+/* Das Chevron */
+.accordion-chevron {
+    transition: transform 0.3s ease, color 0.3s ease;
+}
+
+/* --- ACTIVE & HOVER STATES --- */
+
+.accordion-header:hover {
+    color: var(--text-high);
+}
+
+.accordion-header.active {
+    color: var(--accent);
+}
+
+/* Wenn aktiv: Linie rot färben */
+.accordion-header.active .exercise-accordion-title::after {
+    background: linear-gradient(to right, var(--accent), transparent);
+}
+
+/* Wenn aktiv: Text glühen lassen */
+.accordion-header.active .exercise-accordion-title {
+    text-shadow: 0 0 10px rgba(255, 68, 68, 0.3);
+}
+
+/* Wenn aktiv: Chevron drehen */
+.accordion-header.active .accordion-chevron {
+    transform: rotate(180deg);
+}
+
+/* Die aufklappbaren Container */
+#note-input-container, #previous-notes-container, #sets-list {
+    width: 100%;
+    overflow: hidden;
+    max-height: 0;
+    opacity: 0;
+    /* Margin hier auf 0 setzen, damit er mit animiert werden kann */
+    padding-top: 0;
+    transition: max-height 0.4s ease-in-out, opacity 0.3s ease, margin-top 0.4s ease;
+}
+
+#note-input-container.show, #previous-notes-container.show, #sets-list.show {
+    max-height: 1000px;
+    opacity: 1;
+    padding-top: 0px; /* Wird jetzt sanft eingeblendet */
+}
+
+
+/* ==== NOTE Specific (Input-Box für Notes) ====*/
+
+#temp-exercise-note {
+    width: 100%;
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    color: var(--text-high);
+    border-radius: 8px;
+    padding: 12px;
+    outline: none;
+    resize: none;
+}
+#temp-exercise-note:focus {
+    border-color: var(--accent); /* Dein Rot-Ton */
+    background: rgba(255, 255, 255, 0.05); /* Minimal helleres Schwarz/Grau */
+    box-shadow: 0 0 8px rgba(255, 68, 68, 0.1); /* Ganz dezentes Glühen */
+    transition: all 0.3s ease;
+}
+
+/* Die Liste an sich (Abstände zwischen den Notizen) */
+.history-notes-list {
+    list-style: none;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.history-notes-list li {
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    color: var(--text-high);
+    font-size: 0.85rem;
+    line-height: 1.5;
+    /* Verhindert, dass sehr lange Wörter die Box sprengen */
+    word-wrap: break-word;
+}
+
+/* Das Datum direkt vor dem Text */
+.history-notes-list li strong {
+    color: var(--accent); /* Dein Rot-Ton */
+    font-size: 0.75rem;
+    letter-spacing: 0.5px;
+    margin-right: 1px; /* Abstand zum folgenden Text */
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+/* Die Animation für den Text und die Linie */
+@keyframes flash-white {
+    0% { opacity: 1; }
+    50% { color: #fff; text-shadow: 0 0 10px rgba(255,255,255,0.8); }
+    100% { opacity: 1; }
+}
+
+@keyframes flash-line {
+    0% { background: rgba(255, 255, 255, 0.3); }
+    50% { background: #fff; box-shadow: 0 0 10px rgba(255,255,255,0.8); }
+    100% { background: rgba(255, 255, 255, 0.3); }
+}
+
+/* Wenn die Klasse aktiv ist, blitzen beide kurz auf */
+.new-entry-anim .exercise-accordion-title {
+    animation: flash-white 0.5s ease-out;
+}
+
+.new-entry-anim .exercise-accordion-title::after {
+    animation: flash-line 0.5s ease-out;
+}
+
+
+/* FLOATING BUBBLE BUTTON */
+
+
+.floating-timer {
+    position: fixed; 
+    display: flex; /* Wir steuern Sichtbarkeit über opacity/pointer-events oder .hidden */
+    flex-direction: row;
+    gap: 10px;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    z-index: 9999; /* Extrem hoch, damit er ÜBER dem Overlay liegt */
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);    
+    /* STANDARD: Position im Header (wenn Card offen ist) */
+    top: 15px;
+    left: 50%;
+    transform: translateX(-50%);    
+    padding: 5px 15px;
+    border-radius: 8px;
+
+    /* High-End Look: Glassmorphism */
+    background: rgba(15, 15, 15, 0.85); 
+    backdrop-filter: blur(12px); /* Milchglas-Effekt */
+    -webkit-backdrop-filter: blur(12px);
+    
+    /* Edle Kanten */
+    padding: 8px 24px;
+    border-radius: 14px;
+    border: 2px solid var(--accent); /* Hauchdünne Lichtkante */
+    box-shadow: 
+        0 8px 32px rgba(0, 0, 0, 0.5), /* Tiefe */
+        0 0 10px var(--accent-glow);   /* Dein Akzent-Glow */
+}
+
+.floating-timer.minimized {
+    flex-direction: column;
+    gap: 0;
+    top: calc(100% - 180px); 
+    left: calc(100% - 95px);
+    bottom: auto;
+    right: auto;
+    transform: none;
+    width: 75px;
+    height: 75px;
+    border-radius: 50%;    
+    box-shadow: 0 0 20px var(--accent-glow);
+    background: linear-gradient(145deg, #1a1a1a, #252525); /* Leichte Wölbung */
+    /* 1. Schatten: Äußerer Glow | 2. Schatten: Dunkle Kante unten | 3. Schatten: Lichtkante oben innen */
+    box-shadow: 
+        0 10px 20px rgba(0, 0, 0, 0.5),           /* Tiefe zum Hintergrund */
+        inset 0 2px 3px rgba(255, 255, 255, 0.1), /* Glanzkante oben */
+        inset 0 -3px 10px rgba(0, 0, 0, 0.6),      /* Schatten unten innen */
+        0 0 15px var(--accent-glow);              /* Dein Gold/Rot Glow */
+    border: 2px solid var(--accent); /* Dünnerer, edlerer Rand */
+    touch-action: none;
+}
+
+.floating-timer.minimized:active {
+    transform: scale(0.92);
+    box-shadow: 
+        0 5px 10px rgba(0, 0, 0, 0.5),
+        inset 0 4px 8px rgba(0, 0, 0, 0.8), /* Button wirkt "eingedrückt" */
+        0 0 10px var(--accent-glow);
+    transition: all 0.1s;
+}
+
+#rest-timer {
+    font-family: 'Courier New', monospace;
+    font-size: 2rem;
+    font-weight: 900;
+    color: var(--accent);
+    transition: all 0.1s;
+}
+
+.floating-timer.minimized #rest-timer {
+    font-family: 'Courier New', monospace;
+    font-size: 1.2rem;
+    font-weight: 900;
+    color: var(--accent);
+    transition: all 0.1s;
+}
+
+.rest-label {
+    font-size: 1.5rem;
+    letter-spacing: 1px;
+    margin-bottom: 4px;
+    color: var(--text-mid);
+}
+
+.floating-timer.minimized .rest-label {
+    font-size: 0.7rem;
+    letter-spacing: 1px;
+    color: var(--text-mid);
+}
+
+#resume-icon {
+    font-size: 1.1rem;
+    color: var(--text-mid); /* Dein Gold oder Rot */
+    text-shadow: 0 0 8px var(--accent-glow); /* Das Icon glüht von innen */
+    margin-bottom: 2px;
+}
+
+#rest-timer-container {
+    pointer-events: auto !important; /* Erzwingt, dass die Bubble Klicks/Touches annimmt */
+    touch-action: none !important;  /* Verhindert, dass das Handy die Seite scrollt statt zu ziehen */
+    cursor: pointer; /* Zeigt, dass es klickbar ist */
+    user-select: none; /* Verhindert, dass Text markiert wird beim schnellen Tippen */
+    -webkit-tap-highlight-color: transparent; /* Verhindert blauen Kasten auf Android */
+}
+
+#rest-timer-container:active {
+    transform: scale(0.95) translateX(0); /* Kleiner "Druck"-Effekt */
+    transition: transform 0.1s;
+}
+
+/* Wenn er im Header ist, soll er sich nicht bewegen beim Klick */
+#rest-timer-container:not(.minimized):active {
+    transform: scale(0.98) translateX(-50%);
+}
+
+
+/* ==========================================
+   8. BODY STATS SECTION
+   ========================================== */
+
+#content-body { padding: 10px 20px; }
+.stats-grid { 
+    display: grid; 
+    grid-template-columns: 1fr 1fr; 
+    gap: 15px; 
+    margin-bottom: 25px; 
+}
+
+.input-group { 
+    display: flex; 
+    flex-direction: column; 
+    gap: 8px; 
+}
+
+.input-group label { 
+    font-size: 0.7rem; 
+    font-weight: 700; 
+    color: var(--text-mid); 
+    text-transform: uppercase; 
+}
+
+.input-group input {
+    width: 100%; 
+    background: var(--bg-input); 
+    border: 1px solid var(--border);
+    color: white; 
+    padding: 12px 10px; 
+    border-radius: 12px; 
+    font-size: 1.1rem;
+    text-align: center;
+}
+
+#save-stats-btn {
+   width: calc(100% - 40px); margin: 0 20px; padding: 18px;
+    background: transparent; color: var(--text-high); border: 2px solid var(--accent);
+    border-radius: 12px; font-weight: 800; font-size: 0.9rem;
+    text-transform: uppercase; letter-spacing: 2px;
+}
+
+#save-stats-btn:active {
+    transform: scale(0.98);
+    background-color: var(--accent-dark); /* Falls definiert, sonst etwas dunkleres Rot */
+}
+
+/* Körper-Kategorie (Gewicht, Taille) */
+
+.stats-card h3 {
+   text-align: center;
+    margin:15px;    
+    position: relative; /* Wichtig für die Positionierung des Strichs */
+    padding:15px; /* Platz für den Strich unter dem Text */
+    color: var(--text-mid);
+    text-transform: uppercase;
+    font-size: 1rem;
+    letter-spacing: 2px;
+}
+
+.stats-card h3::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 10%;
+    right: 10%;
+    height: 2px;
+    background: linear-gradient(to right, transparent, var(--border), transparent);
+}
+
+.stats-card h3::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 15%; /* Etwas kürzerer Strich sieht unter Titeln oft besser aus */
+    right: 15%;
+    height: 2px;
+    background: linear-gradient(to right, transparent, var(--border), transparent);
+}
+
+/* ==========================================
+   9.0 BODYSTATS HISTORY SECTION
+   ========================================== */
+/* ÜBERSCHRIFT: "LETZTER EINTRAG" */
+
+.stats-history h3 {
+    text-align: center;
+    margin:15px;    
+    position: relative; /* Wichtig für die Positionierung des Strichs */
+    padding:15px; /* Platz für den Strich unter dem Text */
+    color: var(--text-mid);
+    text-transform: uppercase;
+    font-size: 1rem;
+    letter-spacing: 2px;
+}
+
+.stats-history h3::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 10%;
+    right: 10%;
+    height: 2px;
+    background: linear-gradient(to right, transparent, var(--border), transparent);
+}
+
+#stats-history-list {
+    display: flex;
+    flex-direction: column; /* Karten untereinander */
+    gap: 15px;              /* Der gewünschte Abstand */
+    padding: 0;
+    margin-top: 10px;
+}
+
+.stats-history h3::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 15%; /* Etwas kürzerer Strich sieht unter Titeln oft besser aus */
+    right: 15%;
+    height: 2px;
+    background: linear-gradient(to right, transparent, var(--border), transparent);
+}
+
+/* Das Gitter-Layout für die 6 Werte innerhalb der Stats-Card */
+.body-history-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px 15px;
+    margin-top: 12px;
+}
+
+.stat-entry {
+    display: flex;
+    flex-direction: column;
+}
+
+.stat-entry .label {
+    font-size: 0.65rem;
+    color: var(--text-mid);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.stat-entry .value {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--text-high);
+}
+
+
+/* ==========================================
+   9.1 WORKOUT HISTORY SECTION
+   ========================================== */
+/* ÜBERSCHRIFT: "VERLAUF" */
+#content-history {
+    padding: 10px 20px;
+}
+
+.history-section-header {
+    position: relative; /* Der Anker für den Button */
+    display: flex;
+    justify-content: center; /* Zentriert die Überschrift perfekt */
+    align-items: center;
+    width: 100%;
+    margin-bottom: 20px;
+    min-height: 40px; /* Sorgt für konstante Höhe */
+}
+
+.history-section-header h3 {
+    margin:0 ;
+    text-align: center;
+    flex-grow: 1; /* Nimmt den Platz ein */
+}
+
+.global-export-btn {
+    position: absolute; /* Raus aus dem Textfluss */
+    right: 0; /* Ganz nach rechts geklebt */
+    top: 50%;
+    transform: translateY(-50%); /* Vertikal perfekt mittig zum Text */
+    
+    background: transparent; /* Oder dein var(--bg-card-light) */
+    border: none;
+    color: var(--text-low);
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    padding: 5px;
+}
+
+.global-export-btn:hover {
+    color: var(--accent);
+    transform: translateY(-50%) scale(1.1); /* Erhält die Zentrierung beim Hover */
+}
+
+
+
+.workout-swipe-card h3 {
+    text-align: center;
+    margin:15px;    
+    position: relative; /* Wichtig für die Positionierung des Strichs */
+    padding:15px; /* Platz für den Strich unter dem Text */
+    color: var(--text-mid);
+    text-transform: uppercase;
+    font-size: 1rem;
+    letter-spacing: 2px;
+}
+
+.workout-swipe-card h3::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 10%;
+    right: 10%;
+    height: 2px;
+    background: linear-gradient(to right, transparent, var(--border), transparent);
+}
+
+.workout-swipe-card h3::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 15%; /* Etwas kürzerer Strich sieht unter Titeln oft besser aus */
+    right: 15%;
+    height: 2px;
+    background: linear-gradient(to right, transparent, var(--border), transparent);
+}
+
+.swipe-card.workout-specific-card {
+    border-left: 4px solid var(--accent);    
+}
+
+.workout-specific-card .swipe-card-title {
+    margin: 0 0 8px 0 !important;
+    font-size: 1.1rem !important;
+    text-transform: uppercase !important;
+    letter-spacing: 1px !important;
+    color: var(--text-high) !important;
+    text-align: left !important;
+}
+
+
+
+.workout-history-meta {
+    display: flex;
+    gap: 12px;
+    font-size: 0.8rem;
+    color: var(--text-mid);
+}
+
+.workout-history-meta span {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.workout-history-meta i {
+    color: var(--gold);
+    font-size: 0.75rem;
+}
+
+.workout-btn-action {
+    background: transparent;
+    border: none;    
+    color: var(--text-low);
+    cursor: pointer;
+    font-size: 1rem;
+    transition: color 0.2s;
+}
+
+.workout-btn-action:hover {
+    color: var(--gold);
+    transform: scale(0.92);
+}
+
+#workout-delete-btn:hover {
+    color: var(--accent);
+    
+}
+
+
+.workout-specific-card {
+    cursor: pointer;
+    transition: transform 0.1s ease, background-color 0.2s ease;
+    -webkit-touch-callout: none; /* Verhindert das Kontextmenü (Kopieren/Teilen) auf iOS */
+}
+
+.workout-specific-card:active {
+    transform: scale(0.98); /* Kleiner "Druck"-Effekt */
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+/* ==========================================
+   9.2 WORKOUT DETAILS SECTION
+   ========================================== */
+
+/* Das Overlay-Hintergrund-Viereck */
+.history-detail-overlay {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(8px);
+    z-index: 2000; 
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+/* Die Inhalts-Card */
+.history-detail-content {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    width: 100%;
+    max-width: 450px;
+    max-height: 85vh;
+    border-radius: 24px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: var(--shadow);
+}
+
+/* Header-Bereich */
+.detail-main-header {
+    padding: 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.name-apply-btn {
+    background: var(--bg-card-light); /* Nutzt deinen vorhandenen Karten-Hintergrund */
+    color: var(--accent); /* Deine Hauptfarbe (Gold/Rot/etc.) */
+    border: 1px solid var(--border);
+    border-radius: 8px; /* Eckig mit leichtem Radius passt oft besser zum Rest als rund */
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.name-apply-btn:hover {
+    background: var(--accent);
+    color: white;
+    border-color: var(--accent);
+}
+
+.name-apply-btn:hover {
+    background: #2ecc71;
+    transform: scale(1.1);
+}
+
+.name-apply-btn:active {
+    transform: scale(0.9);
+}
+
+.detail-date {
+    color: var(--text-mid);
+    font-size: 0.85rem;
+    display: block;
+    margin-bottom: 4px;
+}
+
+.detail-session-name {
+    display: inline;
+    align-items: center;
+    gap: 10px;
+    color: var(--accent);
+    font-size: 1.4rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    word-wrap: break-word;     /* Bricht normale Wörter um */
+    overflow-wrap: break-word; /* Moderne Version davon */
+    word-break: break-word;    /* Erzwingt Umbruch auch bei langen Ketten */
+    hyphens: auto;             /* Schöner Bonus: Setzt Bindestriche wenn nötig */
+}
+
+.detail-edit-icon {
+    display: inline-block;
+    font-size: 0.7em;
+    margin-left: 5px;
+    margin-bottom: 3px;
+    color: var(--text-mid);
+    cursor: pointer;
+    opacity: 0.6;
+    transition: opacity 0.2s;
+    transform: translateY(-2px);
+}
+
+.detail-title-group {
+    margin-right: 15px; /* Schafft Sicherheitsabstand zum X-Button */
+    min-width: 0;       /* Verhindert, dass Flex-Items über den Rand schießen */
+    max-width: 80%;
+}
+
+.detail-edit-icon:hover {
+    opacity: 1;
+}
+
+.inline-edit-input {
+    background: var(--bg-input); /* oder transparent */
+    border: 1px solid var(--accent);
+    color: var(--text-high);
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: inherit;
+    font-family: inherit;
+    width: auto;
+    min-width: 150px;
+}
+
+.name-apply-btn.edit-mode-active {
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    width: 28px;
+    height: 28px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: scale(0.8); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+.detail-close-btn {
+    display: flex;
+    flex-shrink: 0;
+    background: var(--bg-input);
+    border: solid 1px var(--border);
+    color: var(--text-high);
+    width: 36px; height: 36px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+}
+
+.detail-header-actions {
+    display: flex;
+    flex-direction: column; /* Stapelt die Buttons untereinander */
+    align-items: center;
+    gap: 15px; /* Abstand zwischen X und Export-Icon */
+}
+
+.detail-action-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-low); /* Dezentere Farbe für den Export */
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    padding: 5px;
+}
+
+.detail-action-btn:hover {
+    color: var(--accent); /* Dein Highlight-Farbton */
+    transform: scale(1.1);
+}
+
+.detail-action-btn:active {
+    transform: scale(0.9);
+}
+
+
+
+/* Scroll-Bereich für die Übungen */
+.detail-scroll-area {
+    padding: 20px;
+    overflow-y: auto;
+}
+
+/* Subsection Container */
+.detail-subsection {
+    margin-bottom: 25px;
+}
+
+/* Titel der Muskelgruppe (Brust, Rücken, etc.) */
+.detail-sub-title {
+    font-size: 0.75rem;
+    letter-spacing: 1.5px;
+    color: var(--text-mid);
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 5px;
+    margin-bottom: 15px;
+    font-weight: 900;
+}
+
+/* Der Block für die einzelne Übung innerhalb der Subsection */
+ .detail-ex-block {
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 12px;
+    padding: 12px;
+    margin-bottom: 10px;
+    border-left: 2px solid var(--accent);
+} 
+
+.detail-ex-name {
+    color: var(--text-high);
+    font-size: 1rem;
+    font-weight: 700;    
+    display: block;
+}
+
+.detail-ex-header i {
+    width: 20px; /* Feste Breite sorgt dafür, dass alle Namen linksbündig starten */
+    text-align: center;
+    opacity: 0.7;
+}
+
+.detail-ex-header .eq-svg-icon {
+    opacity: 0.3;
+}
+
+
+
+/* Die Satz-Zeilen (angepasst für Pausenzeiten) */
+.detail-set-row {
+    display: flex;
+    justify-content: space-between; /* Trennt Daten von Pausenzeit */
+    align-items: center;
+    padding: 6px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    font-size: 0.95rem;
+}
+
+.detail-set-row:last-child { border-bottom: none; }
+
+.set-main-data {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.detail-set-number { color: var(--text-mid); }
+.detail-set-data { color: var(--text-high); }
+.detail-set-data strong { color: var(--gold); }
+
+/* NEU: Styling für die Pausenzeit */
+.set-rest-data {
+    font-size: 0.75rem;
+    color: var(--text-mid);
+    background: rgba(255, 255, 255, 0.05);
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-family: monospace;
+}
+
+.set-rest-data i {
+    font-size: 0.65rem;
+    margin-right: 3px;
+    color: var(--accent);
+}
+
+.detail-ex-note {
+    margin-top: 10px;
+    font-size: 0.8rem;
+    color: var(--gold);
+    font-style: italic;
+    background: rgba(212, 175, 55, 0.05);
+    padding: 8px;
+    border-radius: 8px;
+}
+
+/* ====================================================================================
+   13. SETTINGS CONTENT
+   ==================================================================================== */
+
+/* ==========================================
+   13.2 SETTINGS GRID und CARD LAYOUT
+   ========================================== */
+
+.settings-grid {
+    display: grid; 
+    grid-template-columns: minmax(250px, 400px);
+    align-self: center;
+    gap: 20px; /* Ein kleiner Gap zwischen den Buttons ist auf Mobile wichtig */
+    max-height: 0;   
+}
+
+.settings-grid h3 {
+    text-align: center;
+    margin:25px;    
+    position: relative; /* Wichtig für die Positionierung des Strichs */
+    padding:15px; /* Platz für den Strich unter dem Text */
+    color: var(--text-mid);
+    text-transform: uppercase;
+    font-size: 1rem;
+    letter-spacing: 2px;
+}
+
+.settings-grid h3::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 10%;
+    right: 10%;
+    height: 2px;
+    background: linear-gradient(to right, transparent, var(--border), transparent);
+}
+
+.settings-grid h3::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 15%; /* Etwas kürzerer Strich sieht unter Titeln oft besser aus */
+    right: 15%;
+    height: 2px;
+    background: linear-gradient(to right, transparent, var(--border), transparent);
+}
+
+.settings-card {
+    display: flex; /* Sicherstellen, dass es Flex ist */
+    align-items: center; 
+    gap: 15px;    
+    margin: 8px 0; /* Etwas mehr vertikaler Abstand für die "Klick-Präzision" */
+    padding: 12px 15px; /* Mehr Padding für die Daumen-Bedienung */
+    background: var(--bg-card);
+    border-radius: var(--radius-main);
+    transition: transform 0.2s ease, background 0.2s ease;
+    cursor: pointer;
+}
+
+.settings-card i {
+    font-size: 1.5rem;
+    color: var(--accent);
+    flex-shrink: 0; /* Verhindert, dass das Icon schrumpft */
+}
+
+.settings-card:active, .settings-card:hover {
+    transform: scale(0.97);
+    background: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Header im Modal */
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+#settings-card-title {
+    margin: 0;
+    color: var(--accent);
+    text-transform: uppercase;
+    font-weight: 800;
+}
+
+.close-icon {
+    display: flex;
+    flex-shrink: 0;
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    color: var(--text-high);
+    width: 36px; 
+    height: 36px;
+    border-radius: 10px;
+    align-items: center; 
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;    
+}
+
+.close-icon:hover {
+    background: var(--border); /* Dezentes Highlight beim Hover */
+}
+
+.close-icon:active {
+    transform: scale(0.9); /* Kleiner Klick-Effekt */
+}
+
+
+/* ==========================================
+   13.3 PROFILE VIEW 
+   ========================================== */
+
+/* Die Box, die den Input ersetzt */
+.profile-value-box {
+    width: fit-content;  
+    padding-left: 5px;    
+    color: var(--gold); /* Deine Top-Werte Farbe für die Daten */
+    font-size: 1.1rem;
+    font-weight: 600;
+    text-align: left;
+}
+
+.input-unit-wrapper .profile-value-box.value-small {
+    max-width: 100px;
+}
+
+/* Der Button zum Wechseln in den Edit-Mode */
+.edit-trigger-btn {
+    width: 100%;
+    margin-top: 24px;
+    background: var(--bg-input);
+    color: var(--text-mid);
+    border: 1px solid var(--border);
+}
+
+.edit-trigger-btn:active {
+    background: var(--accent-dim);
+    color: var(--accent);
+}
+
+
+/* ==========================================
+   13.3 PROFILE EDIT SETTINGS
+   ========================================== */
+
+/* Profilbild Bereich */
+.profile-header {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 2rem;
+}
+
+.profile-pic-wrapper {
+    position: relative;
+    width: 150px;
+    height: 150px;
+}
+
+.profile-img, .pic-placeholder {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--accent);
+    cursor: pointer;
+}
+
+.pic-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-input);
+    font-size: 2rem;
+    color: var(--text-mid);
+}
+
+.pic-edit-badge {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    background: var(--accent);
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 0.75rem;
+    border: 2px solid var(--bg-card);
+    cursor: pointer;
+}
+
+/* Input Liste */
+
+.profile-settings-list {
+    display: flex;
+    flex-direction: column;
+    gap: 25px; /* Abstand zwischen den einzelnen Blöcken */
+    padding: 20px 0;
+}
+
+.setting-row {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px; /* Abstand zwischen Label und Input */
+}
+
+.label {
+    color: var(--text-mid);
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-left: 4px; /* Kleiner optischer Einzug */
+}
+
+.input-unit-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    width: 100%;
+}
+
+.profile-input {
+    flex: 1; /* Nimmt den verfügbaren Platz ein */
+    max-width: 200px;    
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px 15px;
+    color: var(--text-high);
+    font-size: 1.1rem;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.input-unit .profile-input {    
+    max-width: 100px;
+}
+
+.profile-input:focus {
+    border-color: var(--accent);
+}
+
+.unit {
+    color: var(--text-low);
+    font-weight: 600;
+    margin: 0 0 -2px;
+    font-size: 1rem;
+    width: fit-content; /* Feste Breite, damit die Inputs bündig bleiben */
+}
+
+.profile-input:focus {
+    border-color: var(--accent);
+}
+
+.save-btn {
+    width: 100%;
+    margin-top: 24px;
+}
+
+/* ==========================================
+   13.4 BACKUP SETTINGS
+   ========================================== */
+
+/* Container für die Backup-Optionen */
+.backup-settings-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px; /* Von 12px auf 20px erhöht */
+    padding: 15px 0;
+}
+
+/* Die einzelnen Backup-Karten (Export/Import) */
+.settings-list .settings-card {
+    display: flex;
+    align-items: center;
+    padding: 18px; /* Etwas mehr Luft innen */
+    cursor: pointer;
+    background: var(--card-bg, #1a1a1a);
+    border-radius: 12px;
+    transition: all 0.2s ease;
+}
+
+.settings-card:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+    transform: translateX(5px); /* Kleiner Slide-Effekt beim Hover */
+}
+
+/* Icons in den Karten */
+.settings-card i {
+    font-size: 1.4rem;
+    color: var(--accent);
+    
+    /* Flex-Zentrierung für das Icon selbst */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    
+    width: 25px; /* Etwas schmaler für kompakten Look */
+    margin-right: 10px; /* Text näher ran (vorher 15px) */
+    text-align: center;
+}
+
+/* Label Text */
+.settings-label {
+    font-size: 1rem;
+    font-weight: 500;
+    line-height: 1; /* Verhindert unnötige Abstände oben/unten */
+}
+
+/* Spezielles Styling für das Bestätigungs-Modal (confirm-card) */
+.confirm-card {
+    text-align: center;
+    max-width: 350px !important; /* Etwas schmaler als das Haupt-Overlay */
+}
+
+.modal-content p {
+    margin-bottom: 15px;
+    line-height: 1.5;
+}
+
+/* Warntext-Box */
+.warning-text {
+    background: rgba(255, 68, 68, 0.15);
+    color: #ff4444;
+    padding: 12px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    border-left: 4px solid #ff4444;
+    margin: 15px 0;
+}
+
+/* BACKUP IMPORT FILE INPUT */
+
+/* Spezifischer Button für das Backup-Modal */
+.backup-action-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    padding: 14px;
+    margin-top: 20px;
+    background-color: var(--accent); /* Dein Blau/Gold/Branding */
+    color: #ffffff;
+    border: none;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.backup-action-btn:hover {
+    filter: brightness(1.1);
+    transform: translateY(-1px);
+}
+
+/* Der finale Button, wenn die Datei geladen ist */
+.backup-confirm-final {
+    background-color: #28a745 !important; /* Grün für den finalen Import */
+    margin-top: 25px;
+}
+
+/* Modal-Anpassung für die Zentrierung */
+.confirm-card .modal-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 20px;
+}
+
+.import-drop-zone {
+    border: 2px dashed var(--border-color);
+    border-radius: 12px;
+    padding: 30px 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.import-drop-zone:hover {
+    border-color: var(--accent);
+    background: rgba(var(--accent-rgb), 0.1);
+    transform: translateY(-2px);
+}
+
+.header-title-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+
+
+
+
+
+
+/* ==========================================
+   14 FOOTER META INFORMATION
+   ========================================== */
+
+
+/* Zusammengefasst für weniger Code */
+.meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 2px 15px; /* Abstand zum Content oben und zu den Seiten */
+    margin-top: 20px;
+    width: 100%;
+    box-sizing: border-box;
+    opacity: 0.5;
+}
+
+.app-version, 
+.copyright {
+    /* Kein position: fixed mehr! */
+    font-size: 0.7rem;
+    color: var(--text-mid);
+    font-weight: 500;
+    letter-spacing: 1px;
+}
+
+
+/* ==========================================
+   15. ANIMATIONS
+   ========================================== */
+
+/* Der Puls-Effekt */
+.pulse-trigger {
+    animation: SlowPulse 4s ease-out forwards;
+}
+
+@keyframes slideUp {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+}
+
+@keyframes modalFadeIn {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+
+@keyframes SlowPulse {
+    0% {         
+        transform: scale(1); 
+    }
+    20% {         
+        transform: scale(1.07); /* Kurzes "Aufpumpen" */
+    }
+    40% {         
+        transform: scale(1); /* Zurück zur Normalform */
+    }
+    100% {         
+        transform: scale(1);
+    }
+}
+
+.force-pulse i {
+    animation: NavIconPulse 2s infinite ease-in-out !important;
+    display: inline-block !important; /* KRITISCH: Ohne das geht transform oft nicht */
+    animation: NavIconPulse 2s infinite ease-in-out !important;
+    color: var(--accent) !important;
+}
+
+@keyframes NavIconPulse {
+    0% { 
+        transform: scale(1); 
+        filter: drop-shadow(0 0 0 rgba(180, 45, 70, 0));
+    }
+    10% { 
+        transform: scale(1.2); /* Etwas stärkeres Aufpumpen für das kleine Icon */
+        filter: drop-shadow(0 0 8px rgba(180, 45, 70, 0.8));
+        color: var(--accent);
+    }
+    20% { 
+        transform: scale(1); 
+        filter: drop-shadow(0 0 0 rgba(180, 45, 70, 0));
+    }
+    100% { 
+        transform: scale(1); 
+    }
+}
+
+
+/* Confirm-Effekt */
+.text-pop-confirm {
+    animation: text-pop 0.4s ease-out forwards;
+}
+
+@keyframes text-pop {
+    0% {
+        transform: scale(1);
+    }
+    30% {
+        transform: scale(1.15); /* Text wird 15% größer */
+        color:#f5f5f7; /* Helles Aufleuchten */
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+/* SortableJS Drag-and-Drop Styles */
+
+.sortable-fallback {
+    opacity: 1 !important;
+    display: flex !important;
+}
+
+.sortable-drag {
+    opacity: 0 !important;
+}
+
+/* Der Rahmen, der erst nach 500ms erscheint */
+.sort-active {
+    opacity: 0.7 !important;
+    background: var(--bg-card) !important;
+    transform: scale(1.05); 
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5) !important;
+    transition: opacity 0.2s ease;
+    z-index: 9999 !important;
+    border: none !important;
+}
+
+/* Der Platzhalter im Hintergrund */
+sortable-ghost {
+    opacity: 0 !important;
+}
+
+@keyframes slowPulse {
+    0% {
+        transform: scale(1);
+        border-color: rgba(80, 7, 7, 0.619);
+        box-shadow: 0 0 15px rgba(180, 45, 70, 0.3);
+    }
+    50% {
+        transform: scale(1.03);
+        border-color: rgba(1, 0, 0, 0.5); /* Hier wird die Umrandung heller */
+        box-shadow: 0 0 30px rgba(52, 2, 11, 0.7);
+    }
+    100% {
+        transform: scale(1);
+        border-color: rgba(80, 7, 7, 0.619);
+        box-shadow: 0 0 15px rgba(180, 45, 70, 0.3);
+    }
+}
+
+@keyframes shine-pop {
+    0% {
+        transform: scale(1);
+        background-color: transparent;
+        box-shadow: 0 0 0 rgba(255, 255, 255, 0);
+    }
+    30% {
+        transform: scale(1.02); /* Minimales Aufpoppen */
+        background-color: rgba(255, 255, 255, 0.15); /* Kurzes helles Aufleuchten */
+        box-shadow: 0 0 15px rgba(255, 255, 255, 0.3); /* Der Glow nach außen */
+        border-color: rgba(255, 255, 255, 0.8);
+    }
+    100% {
+        transform: scale(1);
+        background-color: transparent;
+        box-shadow: 0 0 0 rgba(255, 255, 255, 0);
+    }
+}
+
+@keyframes setBlobIn {
+    0% { opacity: 0; transform: scale(0.8) translateY(-20px); }
+    60% { transform: scale(1.05) translateY(5px); }
+    100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.new-set-animation {
+    animation: setBlobIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards !important;
+}
+
+.beastmode-active {
+    animation: beastmode-sequence 2s cubic-bezier(0.17, 0.89, 0.32, 1.49) forwards;
+    backface-visibility: hidden;
+    perspective: 1000px;
+}
+
+@keyframes beastmode-sequence {
+    0% {
+        opacity: 0;
+        backdrop-filter: blur(0px);
+        transform: scale(0.2); /* Kommt aus der Tiefe */
+    }
+    15% {
+        opacity: 1;
+        backdrop-filter: blur(12px);
+        transform: scale(1.4); /* Schießt ÜBER das Ziel hinaus (Overshoot) */
+    }
+    25% {
+        transform: scale(1.1); /* Pendelt sich groß ein */
+    }
+    80% {
+        opacity: 1;
+        transform: scale(1.15); /* Gaaaanz langsames Weiterwachsen während es steht */
+        backdrop-filter: blur(12px);
+    }
+    100% {
+        opacity: 0;
+        backdrop-filter: blur(0px);
+        transform: scale(3); /* Explodiert förmlich in den Zuschauer rein */
+    }
+}
+
+
+
+/* APP LOCK 
+
+#app-lock-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: #121212; 
+    z-index: 20000; 
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    transition: opacity 0.5s ease;
+}
+
+.lock-input {
+    background: rgba(255,255,255,0.1);
+    border: 1px solid var(--accent);
+    color: white;
+    padding: 15px;
+    border-radius: 12px;
+    text-align: center;
+    font-size: 1.5rem;
+    width: 200px;
+    outline: none;
+}
+
+.lock-btn {
+    background: var(--accent);
+    color: black;
+    border: none;
+    padding: 12px 30px;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+*/
