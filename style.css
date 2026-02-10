@@ -147,19 +147,34 @@ footer {
 
 @keyframes zoom-impact {
     0% { 
-        transform: scale(15); /* Startet riesig */
-        filter: blur(20px) brightness(2); /* Extrem unscharf und hell */
-        opacity: 0;
+        /* Wir starten exakt bei der normalen Größe (wie das Android Logo) */
+        transform: scale(1);
+        opacity: 1;
+        filter: blur(0);
+    }
+    20% {
+        /* Es weicht kurz zurück/wird riesig, als ob es Anlauf nimmt */
+        transform: scale(12);
+        filter: blur(15px) brightness(2);
+        opacity: 0.8;
     }
     70% { 
-        transform: scale(0.9); /* Kurzzeitig kleiner als normal (Aufprall-Effekt) */
-        filter: blur(0px) brightness(1);
+        /* DER EINSCHLAG */
+        transform: scale(0.9);
+        filter: blur(0px) brightness(1.2);
         opacity: 1;
     }
     100% { 
-        transform: scale(1); /* Pendelt sich ein */
+        transform: scale(1);
         opacity: 1;
     }
+}
+
+#splash-logo-svg {
+    width: 180px;
+    height: auto;
+    /* Kein Delay mehr! Es muss sofort übernehmen, wenn Android übergibt */
+    animation: zoom-impact 0.8s cubic-bezier(0.15, 0.85, 0.35, 1.2) forwards;
 }
 
 @keyframes camera-shake {
