@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Simply Gainz</title>
+    <title>RAW</title>
     <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -21,7 +21,7 @@
 
     <header id="main-app-header" class="is-dashboard">
         <div class="header-top">
-            <img src="red.svg" alt="Logo" class="app-logo logo-animate-out">
+            <img src="/logo_neu/RAW/RAW_txt.svg" alt="Logo" class="app-logo logo-animate-out">
         </div>
 
         <div id="header-clock-container" class="header-clock-container">
@@ -36,8 +36,8 @@
             </div>
 
             <div id="idle-workout-display" class="session-details">
-                <span class="idle-title">NO BULLSHIT</span>
-                <span class="idle-subtitle">JUST TRAINING</span>
+                <span class="idle-title">STAY FOCUSED.</span>
+                <span class="idle-subtitle">LIFT HEAVY.</span>
             </div>
         </div>
 
@@ -60,28 +60,28 @@
         <button class="tab-btn" data-tab="legs">Beine</button>
     </nav>
 
-    <div id="equipment-filter-bar" class="filter-bar hidden">
-        <div class="filter-label-icon">
-            <i class="fa-solid fa-sliders"></i>
+    <div id="filter-bar-wrapper" class="filter-controls-wrapper hidden">        
+        <div id="equipment-filter-bar" class="filter-bar">
+            <button class="filter-chip active" data-filter="all">
+                <i class="fa-solid fa-grip"></i>
+            </button>
+
+            <button class="filter-chip" data-filter="machine">
+                <img src="svg_icons/machine.svg" class="eq-svg-icon-filter" alt="Maschine">
+            </button>
+
+            <button class="filter-chip" data-filter="barbell">
+                <i class="fa-solid fa-dumbbell"></i>
+            </button>
+
+            <button class="filter-chip" data-filter="cable">
+                <img src="svg_icons/cable.svg" class="eq-svg-icon-filter" alt="Seilzug">
+            </button>
+
+            <button class="filter-chip" data-filter="bodyweight">
+                <i class="fa-solid fa-person"></i>
+            </button>
         </div>
-
-        <button class="filter-chip active" data-filter="all">Alle</button>
-
-        <button class="filter-chip" data-filter="machine">
-            <img src="svg_icons/machine.svg" class="eq-svg-icon-filter" alt="Maschine">
-        </button>
-
-        <button class="filter-chip" data-filter="barbell">
-            <i class="fa-solid fa-dumbbell"></i>
-        </button>
-
-        <button class="filter-chip" data-filter="cable">
-            <img src="svg_icons/cable.svg" class="eq-svg-icon-filter" alt="Seilzug">
-        </button>
-
-        <button class="filter-chip" data-filter="bodyweight">
-            <i class="fa-solid fa-person"></i>
-        </button>
     </div>
 
 
@@ -93,7 +93,7 @@
         <section id="content-dashboard" class="tab-content">
 
             <div class="dashboard-title">
-                <img src="red.svg" alt="Logo" class="dashboard-logo">
+                <img src="/logo_neu/RAW/RAW.png" alt="Logo" class="dashboard-logo">
 
             </div>
 
@@ -102,7 +102,7 @@
                 <div class="card-template card-accent-left border-accent stat-card volume">
                     <span class="stat-label">Workouts</span>
                     <div class="stat-value" id="dash-session-count">--</div>
-                    <div class="stat-meta">Sessions getrackt</div>
+                    <div class="stat-meta">diesen Monat</div>
                 </div>
 
                 <div class="card-template card-accent-left border-accent stat-card strength">

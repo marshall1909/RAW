@@ -374,7 +374,7 @@ function showMainContent(target) {
 
     const workoutNav = document.getElementById('workout-nav');
     if (workoutNav) workoutNav.classList.toggle('hidden', target !== 'exercises');
-    const filterBar = document.getElementById('equipment-filter-bar');
+    const filterBar = document.getElementById('filter-bar-wrapper');
     if (filterBar) {
         const isExercises = target === 'exercises';
         filterBar.classList.toggle('hidden', !isExercises);
@@ -1434,6 +1434,26 @@ if (dashMaxReps) {
             // Hier rufen wir direkt die Auswahl-Funktion auf
             strengthCard.onclick = (event) => handleFocusChange(event);
         }
+    }
+
+    const dashWeight = document.getElementById('dash-weight');
+const dashWeightDate = document.getElementById('dash-weight-date');
+
+    // Prüfen, ob Einträge in bodyStats vorhanden sind
+    if (typeof bodyStats !== 'undefined' && bodyStats.length > 0) {
+        const latestStat = bodyStats[0]; // Der aktuellste Eintrag
+
+        if (dashWeight) {
+            dashWeight.innerHTML = `${latestStat.weight}<span class="unit">kg</span>`;
+        }
+        if (dashWeightDate) {
+            // Wir nehmen das Datum vom letzten Eintrag
+            dashWeightDate.innerText = `Stand: ${latestStat.date}`;
+        }
+    } else {
+        // Fallback, wenn noch keine Daten vorhanden sind
+        if (dashWeight) dashWeight.innerHTML = `0<span class="unit">kg</span>`;
+        if (dashWeightDate) dashWeightDate.innerText = `Keine Daten`;
     }
 }
 
@@ -3294,9 +3314,7 @@ function askForExportFormat() {
         txtBtn.onclick = () => close('txt');
         cancelBtn.onclick = () => close(null);
     });
-}
-
- 
+} 
 
 function initFloatingBubbleDrag() {
     const bubble = document.getElementById('rest-timer-container');
@@ -3373,6 +3391,19 @@ function snapToEdge(el) {
     }
 }
 
+function toggleFilterBar() {
+    const filterbar = document.getElementById('equipment-filter-bar');
+    
+    if (filterbar) {
+        // Toggle fügt 'hidden' hinzu, wenn es fehlt, und entfernt es, wenn es da ist
+        filterbar.classList.toggle('hidden');
+        
+        // Optional: Speichere den Zustand, damit die Bar beim nächsten Start 
+        // so bleibt, wie der User es zuletzt wollte
+        const isHidden = filterbar.classList.contains('hidden');
+        localStorage.setItem('filterBarHidden', isHidden);
+    }
+}
 
 
                                             {}
@@ -3559,9 +3590,8 @@ document.getElementById('profile-settings').addEventListener('click', renderProf
 //--- Backup Einstellungen öffnen
 document.getElementById('backup-settings').addEventListener('click', renderBackupSettings);
 
-
-
-
+//--- FILTER-BAR toggle 
+document.getElementById('filter-trigger').addEventListener('click', toggleFilterBar);
 
 
 
