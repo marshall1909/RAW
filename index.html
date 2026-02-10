@@ -15,10 +15,20 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="RAW">
     <meta name="mobile-web-app-capable" content="yes">
-    <meta name="theme-color" content="#0f0f12">   
+    <meta name="theme-color" content="#0f0f12">
 </head>
 
 <body>
+
+    <div id="splash-screen">
+        <div class="impact-container">
+            <img src="./icons/icon_square.svg" id="splash-logo-svg" alt="RAW">
+
+            <div class="loader-container">
+                <div class="loader-bar"></div>
+            </div>
+        </div>
+    </div>
 
     <header id="main-app-header" class="is-dashboard">
         <div class="header-top">
@@ -61,7 +71,7 @@
         <button class="tab-btn" data-tab="legs">Beine</button>
     </nav>
 
-    <div id="filter-bar-wrapper" class="filter-controls-wrapper hidden">        
+    <div id="filter-bar-wrapper" class="filter-controls-wrapper hidden">
         <div id="equipment-filter-bar" class="filter-bar">
             <button class="filter-chip active" data-filter="all">
                 <i class="fa-solid fa-grip"></i>
@@ -353,7 +363,7 @@
             </button>
         </nav>
         <div class="meta">
-            <p class="app-version">beta v0.7.1</p>
+            <p class="app-version">beta v0.7.5</p>
             <p class="copyright">&copy; by Marshall</p>
         </div>
     </footer>

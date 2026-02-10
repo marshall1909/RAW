@@ -3639,6 +3639,30 @@ if (document.readyState === "complete" || document.readyState === "interactive")
     document.addEventListener("DOMContentLoaded", initFloatingBubbleDrag);
 }
 
+window.addEventListener('load', () => {
+    const splash = document.getElementById('splash-screen');
+    
+    /* TIMING-CHECK (basierend auf dem CSS):
+       - Zoom-Impact: 0.4s
+       - Fade-in Balken: Start bei 0.6s
+       - Ladebalken läuft: 1.5s (endet bei ca. 2.1s)
+    */
+
+    const totalAnimationTime = 2200; // 2.2 Sekunden für den kompletten Ablauf
+
+    setTimeout(() => {
+        // Sanftes Ausfaden des gesamten Splashscreens
+        splash.style.transition = 'opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1), filter 0.6s ease';
+        splash.style.opacity = '0';
+        splash.style.filter = 'blur(20px)'; // Optionaler "Abgang-Effekt"
+        
+        // Nach dem Fade-out das Element komplett aus dem DOM entfernen
+        setTimeout(() => {
+            splash.remove();
+        }, 600);
+    }, totalAnimationTime);
+});
+
  
 
 
