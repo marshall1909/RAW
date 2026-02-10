@@ -1,25 +1,19 @@
 {
-    "short_name": "SimplyGainz",
-    "name": "Simply Gainz Training",
+    "short_name": "RAW",
+    "name": "RAW - STAY FOCUSED.",
     "icons": [
         {
-            "src": "icon-192-text.png",
+            "src": "./icons/maskable_icon_x192",
             "sizes": "192x192",
             "type": "image/png",
             "purpose": "any maskable"
         },
         {
-            "src": "icon-512-text.png",
+            "src": "./icon/maskable_icon_x512",
             "sizes": "512x512",
             "type": "image/png",
             "purpose": "any maskable"
-        },
-        {
-            "src": "icon-1024-text.png",
-            "sizes": "1024x1024",
-            "type": "image/png",
-            "purpose": "any maskable"
-        }
+        }       
     ],
     "start_url": ".",
     "display": "standalone",
