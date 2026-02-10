@@ -1,22 +1,39 @@
 {
     "short_name": "RAW",
     "name": "RAW - STAY FOCUSED.",
+    "description": "Dein minimalistischer Workout Tracker für maximalen Fokus.",
     "icons": [
         {
-            "src": "./icons/maskable_icon_x192.png",
+            "src": "./icons/maskable_icon_192.png",
             "sizes": "192x192",
             "type": "image/png",
-            "purpose": "any maskable"
+            "purpose": "maskable"
         },
         {
-            "src": "./icon/maskable_icon_x512.png",
+            "src": "./icons/icon_192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "./icons/maskable_icon_512.png",
             "sizes": "512x512",
             "type": "image/png",
-            "purpose": "any maskable"
-        }       
+            "purpose": "maskable"
+        },
+        {
+            "src": "./icons/icon_512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any"
+        }
     ],
-    "start_url": ".",
+    "start_url": "./index.html",
     "display": "standalone",
-    "theme_color": "#0f0f12",
-    "background_color": "#0f0f12"
+    "display_override": ["window-controls-overlay"],
+    "orientation": "portrait",
+    "theme_color": "#000000",
+    "background_color": "#000000",
+    "categories": ["fitness", "lifestyle"],
+    "lang": "de-DE"
 }

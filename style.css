@@ -642,6 +642,7 @@ header {
     opacity: 0 !important;
     transform: translateX(-100px) !important;
     pointer-events: none;
+    transition: transform 0.2 ease;
 }
 
 /* ==========================================
@@ -752,7 +753,7 @@ header.is-dashboard .header-clock-container {
     height: 100%;    
     transform: translateX(0px);
     transition: 
-        transform 0.6s cubic-bezier(0.2, 1, 0.3, 1), 
+        transform 0.35s ease, 
         filter 0.4s ease, 
         opacity 0.5s ease; 
         
@@ -910,7 +911,7 @@ header.is-dashboard .header-clock-container {
     top: 120px; 
     background-color: var(--bg-menu);
     align-content: center;
-    z-index: 8000;
+    z-index: 800;
 }
 
 .filter-controls-wrapper::after {

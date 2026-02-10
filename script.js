@@ -1982,9 +1982,9 @@ function createExerciseCard(ex) {
     if (sub === 'brust' || sub.includes('schulter') || sub === 'trizeps') {
         borderClass = 'border-push';
     } else if (sub === 'rücken' || sub === 'ruecken' || sub === 'bizeps') {
-        borderClass = 'border-pull';
+        borderClass = 'border-push';
     } else if (cat === 'legs' || sub === 'legs' || sub === 'beine') {
-        borderClass = 'border-legs';
+        borderClass = 'border-push';
     }
 
     card.className = `card-template card-accent-left card-clickable exercise-node ${borderClass}`;
@@ -3452,7 +3452,6 @@ async function handleDevReset() {
                                                                                         {}
 
 document.addEventListener('DOMContentLoaded', () => {      
-    updateGreeting();
     recoverActiveSession();
     renderAllExercises();
     renderStatsHistory();
