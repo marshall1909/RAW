@@ -61,15 +61,24 @@ let sortTimeout;
 let shouldAnimateNewEntry = false;
 let shouldAnimateNewSet = false;
 let currentExerciseId = null;
-let touchStartY = 0;
+let currentEquipmentFilter = 'all';
+// TOUCH VARIABLEN
 let startY = 0;
 let currentY = 0;
 let startX = 0;
 let currentX = 0;
+let isNavigationBlocked = false;
 let isDragging = false;
 let isSwiping = false;
 let bubbleIsDragging = false;
-let currentEquipmentFilter = 'all';
+
+const WORKOUT_GROUPS = {
+    push: ['brust', 'schultern', 'trizeps'],
+    pull: ['rücken', 'ruecken', 'bizeps'],
+    legs: ['legs'],
+    // core: ['bauch', 'core', 'unterer rücken']
+};
+
 
 
 
@@ -366,7 +375,7 @@ function cleanupSession() {
 
 
 function showMainContent(target) {
-    const mainSections = ['dashboard', 'exercises', 'settings', 'history', 'body'];
+    const mainSections = ['dashboard', 'exercises', 'settings', 'history', 'body', 'statistics'];
     mainSections.forEach(id => {
         const el = document.getElementById('content-' + id);
         if (el) el.classList.toggle('hidden', id !== target);
@@ -462,6 +471,54 @@ function showMainContent(target) {
             }
         }
     });
+
+    
+    if (target === 'statistics') {
+        renderStatistics();
+    }
+
+    if (!window.history.state || window.history.state.target !== target) {
+        window.history.pushState({ target: target }, "");
+    }
+}
+
+function handleMainSwipe(sX, sY, eX, eY) {
+    const mainSections = ['dashboard', 'exercises', 'history', 'body', 'settings'];
+    
+    // Wir nutzen hier die Differenz zwischen Start und Ende
+    const diffX = sX - eX; // Positiv = Swipe nach links (vorwärts)
+    const diffY = sY - eY;
+
+    // 1. Sicherheits-Check: Ist ein Overlay offen?
+    // Wenn ja, wollen wir NICHT die Hauptseiten im Hintergrund wechseln.
+    const overlay = document.getElementById('exercise-overlay');
+    if (overlay && !overlay.classList.contains('hidden')) {
+        console.log("Navigation ignoriert: Overlay ist offen.");
+        return;
+    }
+
+    // 2. Validierung: Horizontaler Fokus?
+    // Threshold: 100px | Fokus: Horizontal muss 1.5x stärker sein als vertikal
+    if (Math.abs(diffX) > 80 && Math.abs(diffX) > Math.abs(diffY) * 1.5) {
+        
+        // 3. Aktuelle Sektion finden
+        const activeSection = mainSections.find(id => {
+            const el = document.getElementById('content-' + id) || document.getElementById(id);
+            return el && !el.classList.contains('hidden');
+        });
+
+        const currentIndex = mainSections.indexOf(activeSection);
+        if (currentIndex === -1) return;
+
+        // 4. Richtungs-Logik
+        if (diffX > 0 && currentIndex < mainSections.length - 1) {
+            // Finger von rechts nach links -> nächste Seite
+            showMainContent(mainSections[currentIndex + 1]);
+        } else if (diffX < 0 && currentIndex > 0) {
+            // Finger von links nach rechts -> vorherige Seite
+            showMainContent(mainSections[currentIndex - 1]);
+        }
+    }
 }
 
 function switchWorkoutTab(category) {
@@ -599,6 +656,7 @@ function openExerciseCard(ex) {
         inputArea.style.display = activeSession ? 'block' : 'none';
     }        
     
+    window.history.pushState({ target: 'exercises', overlay: true }, "");
     checkQuickResume();
     renderCurrentSets(ex.id);
 }
@@ -712,25 +770,44 @@ function handleOverlayDragEnd() {
     currentY = 0;
 }
 
-function handlePopState() {
+function handleNavigationBack(event) {
     const overlay = document.getElementById('exercise-overlay');
     
-    // Nur reagieren, wenn das Overlay gerade sichtbar ist
+    // 1. PRIORITÄT: Overlay schließen
     if (overlay && !overlay.classList.contains('hidden')) {
-        // Wir rufen die existierende Funktion auf. 
-        // WICHTIG: Falls closeExerciseCard selbst ein history.back() macht, 
-        // müssen wir aufpassen, dass wir keine Endlosschleife bauen.
+        closeExerciseOverlayInternally();
         
-        overlay.classList.add('hidden');
-        document.body.classList.remove('modal-open');
-        checkQuickResume();
-        
-        // Reset der Drag-Werte (wie in deiner Original-Logik)
-        setTimeout(() => {
-            currentY = 0;
-            isDragging = false;
-        }, 500);
+        // Verhindern, dass die App beim Schließen des Overlays die Seite wechselt
+        const currentTarget = event?.state?.target || 'dashboard';
+        window.history.pushState({ target: currentTarget }, "");
+        return; 
     }
+
+    // 2. PRIORITÄT: Von Unterseite zum Dashboard
+    if (event && event.state && event.state.target) {
+        const target = event.state.target;
+
+        if (target !== 'dashboard') {
+            showMainContent('dashboard');
+            // Den History-Eintrag auf Dashboard setzen, damit das nächste Zurück die App schließt
+            window.history.replaceState({ target: 'dashboard' }, "");
+        } else {
+            showMainContent('dashboard');
+        }
+    }
+}
+
+// Hilfsfunktion zum Schließen (damit es sauber getrennt ist)
+function closeExerciseOverlayInternally() {
+    const overlay = document.getElementById('exercise-overlay');
+    overlay.classList.add('hidden');
+    document.body.classList.remove('modal-open');
+    if (typeof checkQuickResume === 'function') checkQuickResume();
+    
+    setTimeout(() => {
+        currentY = 0;
+        isDragging = false;
+    }, 500);
 }
 
 function handleSaveSet() {
@@ -1203,87 +1280,6 @@ const reorderedGridExercises = newOrderIds
     console.log("Daten im Hintergrund gespeichert. DOM bleibt unverändert.");
 }
 
-function initSwipeToDelete() {
-    const cards = document.querySelectorAll('.swipe-card');
-    
-    cards.forEach((card, index) => {
-        let startX = 0;
-        let currentX = 0;
-        const threshold = -100; // Ab wie viel Pixeln nach links (negativ) wird gelöscht?
-
-        card.ontouchstart = (e) => {
-            startX = e.touches[0].clientX;
-            card.style.transition = 'none'; // Sofortiges Feedback ohne Verzögerung
-        };
-
-        card.ontouchmove = (e) => {
-            currentX = e.touches[0].clientX - startX;
-            
-            if (currentX < 0) { // Nur nach links
-                card.style.transform = `translateX(${currentX}px)`;
-                
-                // Finde den delete-hint in diesem speziellen Wrapper
-                const hint = card.closest('.swipe-card-wrapper').querySelector('.delete-hint');
-                if (hint) {
-                    // Logik: Ab 0px fängt es an, bei -100px ist es voll da (1)
-                    // Wir nutzen Math.abs um den negativen Wert positiv zu machen
-                    let progress = Math.abs(currentX) / 100; 
-                    
-                    // Erst ab 30-50px wirklich sichtbar werden lassen für den "Einstieg"
-                    if (Math.abs(currentX) < 30) {
-                        hint.style.opacity = 0;
-                    } else {
-                        hint.style.opacity = Math.min(progress, 1);
-                    }
-                }
-            }
-        };
-
-        card.ontouchend = async () => {
-            // Weiche Animation für das Zurückschnappen oder Rausrutschen
-            card.style.transition = 'transform 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28)';
-            
-            // Wir brauchen den Hint, um ihn ggf. wieder auszublenden
-            const hint = card.parentElement.querySelector('.delete-hint');
-
-            if (currentX < threshold) {
-                // 1. Karte erst mal ganz rausschieben für den visuellen Effekt
-                card.style.transform = `translateX(-100%)`; 
-
-                // 2. Deine Bestätigung abwarten
-                const confirmed = await showCustomConfirm(
-                    "Workout löschen",
-                    "Bist du sicher? Das kann nicht rückgängig gemacht werden.",
-                    "Löschen",
-                    true
-                );
-
-                if (confirmed) {
-                    // 3. Wenn gelöscht wird:
-                    deleteWorkout(index);
-                } else {
-                    // 4. Wenn abgebrochen wird: Alles zurück auf Anfang
-                    card.style.transform = `translateX(0)`;
-                    if (hint) {
-                        hint.style.transition = 'opacity 0.3s ease';
-                        hint.style.opacity = 0;
-                    }
-                }
-            } else {
-                // Nicht weit genug geswiped: Einfach zurückgleiten
-                card.style.transform = `translateX(0)`;
-                if (hint) {
-                    hint.style.transition = 'opacity 0.3s ease';
-                    hint.style.opacity = 0;
-                }
-            }
-
-            // Reset der Tracking-Variable
-            currentX = 0;
-        };
-    });
-}
-
 async function deleteStat(index) {
     // Unser Custom Confirm statt des Browser-Standards
     const confirmed = await showCustomConfirm(
@@ -1335,125 +1331,93 @@ function editWorkout(index) {
 
 function updateDashboard() {
     const now = new Date();
-    const currentMonth = now.getMonth() + 1; // Januar ist 1
+    const currentMonth = now.getMonth() + 1; 
     const currentYear = now.getFullYear();
 
+    // --- 1. DATEN BERECHNEN (Logik bleibt gleich) ---
+    
+    // Sessions diesen Monat
     const sessionsThisMonth = trainingHistory.filter(session => {
         if (!session.date) return false;
-        
-        // Wir teilen "29.1.2026" an den Punkten auf
         const parts = session.date.split('.'); 
         if (parts.length < 3) return false;
-
-        const sDay = parseInt(parts[0]);
-        const sMonth = parseInt(parts[1]);
-        const sYear = parseInt(parts[2]);
-
-        // Nur zählen, wenn Monat und Jahr exakt übereinstimmen
-        return sMonth === currentMonth && sYear === currentYear;
+        return parseInt(parts[1]) === currentMonth && parseInt(parts[2]) === currentYear;
     }).length;
 
+    // Gesamtleistung (Volumen)
+    const stats = getVolumeStats(); 
+    const tonnes = (stats.total / 1000).toFixed(1);
+
+    // Fokus-Übung Bestleistung
     const focusExId = localStorage.getItem('dashboard_focus_ex_id') || 'brust_bankdruecken';
-    let bestSet = { weight: 0, reps: 0 }; // Start bei 0, damit jeder echte Wert zählt
-    let totalVolume = 0;
+    const focusExName = localStorage.getItem('dashboard_focus_ex_name') || 'Bankdrücken';
+    let bestSet = { weight: 0, reps: 0 }; 
 
-trainingHistory.forEach(session => {
-    const ex = session.exercises?.find(e => e.id === focusExId);
-    if (ex?.sets) {
-        ex.sets.forEach(s => {
-            let w = parseFloat(s.weight) || 0;
-            let r = parseInt(s.reps) || 0;
-            
-            // Bestes Gewicht finden
-            if (w > bestSet.weight || (w === bestSet.weight && r > bestSet.reps)) {
-                bestSet = { weight: w, reps: r };
-            }
-            // Volumen für das Dashboard (Optional: nur der letzten Session oder All-time?)
-            // Hier meist sinnvoll: Das Volumen der aktuellsten Session dieser Übung
-            totalVolume += (w * r); 
-        });
-    }
-});
+    trainingHistory.forEach(session => {
+        const ex = session.exercises?.find(e => e.id === focusExId);
+        if (ex?.sets) {
+            ex.sets.forEach(s => {
+                let w = parseFloat(s.weight) || 0;
+                let r = parseInt(s.reps) || 0;
+                if (w > bestSet.weight || (w === bestSet.weight && r > bestSet.reps)) {
+                    bestSet = { weight: w, reps: r };
+                }
+            });
+        }
+    });
 
-// --- UI BEFÜLLEN ---
-const dashMaxWeight = document.getElementById('dash-max-weight');
-const dashMaxReps = document.getElementById('dash-max-reps');
+    // --- 2. UI BEFÜLLEN & KLICK-LOGIK ---
 
-if (dashMaxWeight) {
-    dashMaxWeight.innerHTML = `${bestSet.weight}<span class="unit">kg</span>`;
-}
-if (dashMaxReps) {
-    dashMaxReps.innerHTML = `${bestSet.reps}<span class="unit">reps</span>`;
-}
-    // Den Klick-Event legen wir auf das ELTERN-Element (die Karte)
-    const weightCard = document.querySelector('.stat-card.body');
-    if (weightCard) {
-        weightCard.onclick = () => showMainContent('body');
-        weightCard.classList.add('clickable-card');
-    }
-
-    // 2. SESSIONS (Analog dazu)
-    const sessionCard = document.getElementById('dash-session-count');
+    // A) SESSIONS (Workouts) -> Führt zu History
+    const sessionVal = document.getElementById('dash-session-count');
+    const sessionCard = document.querySelector('.stat-card.sessions');
+    if (sessionVal) sessionVal.innerText = sessionsThisMonth;
     if (sessionCard) {
-        sessionCard.innerText = sessionsThisMonth;
+        sessionCard.onclick = () => showMainContent('history');
+        sessionCard.classList.add('clickable-card');
     }
-    // Auch hier: Klick auf die ganze Karte
+
+    // B) GESAMTLEISTUNG (Volume) -> Führt zu Statistics
+    const dashTotalVolume = document.getElementById('dash-total-volume');
+    //const dashTotalVolumeKg = document.getElementById('dash-total-volume-kg');
     const volumeCard = document.querySelector('.stat-card.volume');
+    
+    if (dashTotalVolume) dashTotalVolume.innerHTML = `${tonnes}<span class="unit">t</span>`;
+    //if (dashTotalVolumeKg) dashTotalVolumeKg.innerText = `${stats.total.toLocaleString()} kg insgesamt`;
     if (volumeCard) {
-        volumeCard.onclick = () => showMainContent('history');
+        volumeCard.onclick = () => showMainContent('statistics');
         volumeCard.classList.add('clickable-card');
     }
-    // Auch hier: Klick auf die ganze Karte
-    const cardioCard = document.querySelector('.stat-card.cardio');
-    if (cardioCard) {
-        //cardioCard.onclick = () => showMainContent('cardio');
-        cardioCard.classList.add('clickable-card');
-    }
 
-    // 3. TOP SATZ (Fokus-Übung)
-    const focusExName = localStorage.getItem('dashboard_focus_ex_name') || 'Bankdrücken';
+    // C) KRAFT (Top Satz) -> Fokus Change
     const benchLabel = document.querySelector('.stat-card.strength .stat-label');
-
-    if (benchLabel) {
-        benchLabel.innerText = `Top Satz ${focusExName}`;
-    }
     const benchVal = document.getElementById('dash-bench-pr');
+    const strengthCard = document.querySelector('.stat-card.strength');
+
+    if (benchLabel) benchLabel.innerText = `${focusExName}`;
     if (benchVal) {
         benchVal.innerHTML = `${bestSet.weight}<span class="unit">kg</span>`;
-        
-        // Das meta-Element direkt unter dem Wert finden
         const benchMeta = benchVal.nextElementSibling; 
-        if (benchMeta) {
-            // Zeigt jetzt dynamisch z.B. "5 Reps (All-Time Best)"
-            benchMeta.innerText = `${bestSet.reps} Reps (Bestleistung)`;
-        }
-        // CLICKABLE LOGIK: Die Karte öffnet direkt die Auswahl
-        const strengthCard = benchVal.closest('.stat-card.strength');
-        if (strengthCard) {
-            strengthCard.classList.add('clickable-card');
-            // Hier rufen wir direkt die Auswahl-Funktion auf
-            strengthCard.onclick = (event) => handleFocusChange(event);
-        }
+        if (benchMeta) benchMeta.innerText = `${bestSet.reps} Reps (Bestleistung)`;
+    }
+    if (strengthCard) {
+        strengthCard.onclick = (event) => handleFocusChange(event);
+        strengthCard.classList.add('clickable-card');
     }
 
+    // D) KÖRPER (Gewicht) -> Führt zu Body
     const dashWeight = document.getElementById('dash-weight');
-const dashWeightDate = document.getElementById('dash-weight-date');
+    const dashWeightDate = document.getElementById('dash-weight-date');
+    const bodyCard = document.querySelector('.stat-card.body');
 
-    // Prüfen, ob Einträge in bodyStats vorhanden sind
     if (typeof bodyStats !== 'undefined' && bodyStats.length > 0) {
-        const latestStat = bodyStats[0]; // Der aktuellste Eintrag
-
-        if (dashWeight) {
-            dashWeight.innerHTML = `${latestStat.weight}<span class="unit">kg</span>`;
-        }
-        if (dashWeightDate) {
-            // Wir nehmen das Datum vom letzten Eintrag
-            dashWeightDate.innerText = `Stand: ${latestStat.date}`;
-        }
-    } else {
-        // Fallback, wenn noch keine Daten vorhanden sind
-        if (dashWeight) dashWeight.innerHTML = `0<span class="unit">kg</span>`;
-        if (dashWeightDate) dashWeightDate.innerText = `Keine Daten`;
+        const latestStat = bodyStats[0]; 
+        if (dashWeight) dashWeight.innerHTML = `${latestStat.weight}<span class="unit">kg</span>`;
+        if (dashWeightDate) dashWeightDate.innerText = `Stand: ${latestStat.date}`;
+    }
+    if (bodyCard) {
+        bodyCard.onclick = () => showMainContent('body');
+        bodyCard.classList.add('clickable-card');
     }
 }
 
@@ -2223,7 +2187,7 @@ function renderWorkout() {
         
     });
 
-        enableSwipeActions('.swipe-card', async (index) => {
+        enableSwipeDelete('.workout-specific-card', async (index) => {
         return await deleteWorkout(index);
     });
 }
@@ -2632,6 +2596,51 @@ function renderBackupSettings() {
     setTimeout(() => overlay.classList.remove('hidden'), 10);
 }
 
+function renderStatistics() {
+    const stats = getVolumeStats();
+
+    // 1. Hero Bereich befüllen
+    const grandTotalEl = document.getElementById('stats-grand-total');
+    const grandTotalKgEl = document.getElementById('stats-grand-total-kg');
+    
+    if (grandTotalEl) {
+        grandTotalEl.innerHTML = `${(stats.total / 1000).toFixed(2)}<span class="unit">t</span>`;
+    }
+    if (grandTotalKgEl) {
+        grandTotalKgEl.innerText = `${stats.total.toLocaleString()} kg bewegt`;
+    }
+
+    // 2. Gruppen (Push, Pull, Legs) befüllen
+    const groups = ['push', 'pull', 'legs'];
+    
+    groups.forEach(groupKey => {
+        const groupData = stats.groups[groupKey];
+        const totalEl = document.getElementById(`stats-${groupKey}-total`);
+        const subListEl = document.getElementById(`stats-${groupKey}-subs`);
+
+        if (totalEl) {
+            totalEl.innerText = `${groupData.total.toLocaleString()} kg`;
+        }
+        
+        if (subListEl) {
+            subListEl.innerHTML = '';
+            // Wir loopen durch die Untergruppen (Brust, Bizeps etc.)
+            for (const [subName, subValue] of Object.entries(groupData.subs)) {
+                // Nur anzeigen, wenn auch wirklich Gewicht bewegt wurde (optional)
+                if (subValue > 0) {
+                    const item = document.createElement('div');
+                    item.className = 'sub-item';
+                    item.innerHTML = `
+                        <span>${subName}</span>
+                        <span>${subValue.toLocaleString()} kg</span>
+                    `;
+                    subListEl.appendChild(item);
+                }
+            }
+        }
+    });
+}
+
 
                                             {}
 // ==========================================
@@ -2917,58 +2926,45 @@ function appendAddButtons() {
     });
 }
 
-function enableSwipeActions(selector, onDelete) {
+function enableSwipeDelete(selector) {
     const cards = document.querySelectorAll(selector);   
-    
-    cards.forEach((card, index) => {
-        const threshold = -100;
-        const deadzone = 15;
+    const threshold = -100;
+    const deadzone = 15;
 
+    cards.forEach((card) => {
         card.ontouchstart = (e) => {
-            startX = e.touches[0].clientX;
-            startY = e.touches[0].clientY; // Y-Position speichern
+            // Wir lassen den globalen Listener startX/startY setzen,
+            // signalisieren aber: Hier passiert eine Spezial-Aktion.
+            isSwiping = false; // Reset für diesen spezifischen Swipe
             card.style.transition = 'none';
-            isSwiping = false; // Reset bei neuem Touch
         };
 
         card.ontouchmove = (e) => {
-            const touchX = e.touches[0].clientX;
-            const touchY = e.touches[0].clientY;
-            const diffX = touchX - startX;
-            const diffY = touchY - startY;
-
-            // Logik: Wenn wir noch nicht im Swipe-Modus sind...
+            // Nutze die globalen diff-Werte
+            // Prüfen, ob wir horizontal genug sind (Scroll-Schutz)
             if (!isSwiping) {
-                // ...prüfen wir, ob die horizontale Bewegung groß genug ist
-                // UND ob sie größer ist als die vertikale (Scrollen verhindern)
-                if (Math.abs(diffX) > deadzone && Math.abs(diffX) > Math.abs(diffY)) {
+                if (Math.abs(currentX) > deadzone && Math.abs(currentX) > Math.abs(currentY)) {
                     isSwiping = true;
-                } else if (Math.abs(diffY) > deadzone) {
-                    // Nutzer scrollt wohl vertikal -> Swipe für diesen Touch ignorieren
-                    return; 
+                    isNavigationBlocked = true; // Jetzt Navigation sperren
+                } else if (Math.abs(currentY) > deadzone) {
+                    return; // Es ist ein vertikaler Scroll
                 }
             }
 
-            // Nur wenn isSwiping aktiv ist, bewegen wir die Karte
-            if (isSwiping && diffX < 0) {
-                // Verhindert, dass die Seite beim Swipen mitscrollt
+            // Visuelle Bewegung der Karte (nur nach links)
+            if (isSwiping && currentX < 0) {
                 if (e.cancelable) e.preventDefault(); 
                 
-                currentX = diffX;
                 card.style.transform = `translateX(${currentX}px)`;
 
+                // Gradient-Effekt
                 const wrapper = card.closest('.swipe-card-wrapper');
                 const hint = wrapper ? wrapper.querySelector('.delete-hint') : null;
                 
                 if (wrapper && hint) {
-                    let absX = Math.abs(currentX);
-                    let alpha = Math.min(absX / 100, 1);
-
-                    if (absX > 10) {
-                        wrapper.style.background = `linear-gradient(to left, 
-                            rgba(108, 12, 9, ${alpha}) 0%, 
-                            rgba(108, 12, 9, ${alpha * 0.5}) 50%, 
-                            rgba(108, 12, 9, 0) 95%)`;
+                    let alpha = Math.min(Math.abs(currentX) / 100, 1);
+                    if (Math.abs(currentX) > 10) {
+                        wrapper.style.background = `linear-gradient(to left, rgba(108, 12, 9, ${alpha}), rgba(108, 12, 9, 0) 95%)`;
                         hint.style.opacity = alpha;
                     }
                 }
@@ -2976,13 +2972,14 @@ function enableSwipeActions(selector, onDelete) {
         };
 
         card.ontouchend = async () => {
-            // Weiche Animation für die Karte
+            if (!isSwiping) {
+                isNavigationBlocked = false;
+                return;
+            }
+
             card.style.transition = 'transform 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28)';
-            
             const wrapper = card.closest('.swipe-card-wrapper');
-            const hint = wrapper ? wrapper.querySelector('.delete-hint') : null
-            
-            // NEU: Hol dir den gespeicherten Index vom li
+            const hint = wrapper ? wrapper.querySelector('.delete-hint') : null;
             const realIndex = parseInt(card.dataset.index);
 
             if (currentX < threshold) {
@@ -2998,31 +2995,27 @@ function enableSwipeActions(selector, onDelete) {
                 if (confirmed) {
                     deleteWorkout(realIndex);
                 } else {
-                    // Abbruch: Alles zurücksetzen
-                    card.style.transform = `translateX(0)`;
-                    if (wrapper) wrapper.style.background = 'none'; // Gradient entfernen
-                    if (hint) {
-                        hint.style.transition = 'opacity 0.3s ease';
-                        hint.style.opacity = 0;
-                    }
+                    resetCard(card, wrapper, hint);
                 }
             } else {
-                // Nicht weit genug geswiped: Zurückgleiten
-                card.style.transform = `translateX(0)`;
-                if (wrapper) {
-                    // Wir setzen den Background auf none, damit nichts stehen bleibt
-                    wrapper.style.background = 'none';
-                }
-                if (hint) {
-                    hint.style.transition = 'opacity 0.3s ease';
-                    hint.style.opacity = 0;
-                }
+                resetCard(card, wrapper, hint);
             }
 
-            currentX = 0;
+            // Cleanup
+            isSwiping = false;
+            setTimeout(() => { isNavigationBlocked = false; }, 50);
         };
-       
     });
+}
+
+// Hilfsfunktion zum Zurücksetzen der Karten-Optik
+function resetCard(card, wrapper, hint) {
+    card.style.transform = `translateX(0)`;
+    if (wrapper) wrapper.style.background = 'none';
+    if (hint) {
+        hint.style.transition = 'opacity 0.3s ease';
+        hint.style.opacity = 0;
+    }
 }
 
 function getPreviousNotes(exId) {
@@ -3320,75 +3313,76 @@ function initFloatingBubbleDrag() {
     const bubble = document.getElementById('rest-timer-container');
     if (!bubble) return;
 
-    let startX, startY, initialLeft, initialTop;
+    let initialLeft, initialTop;
 
     bubble.addEventListener('touchstart', (e) => {
-        console.log("1. Touchstart registriert!"); // TEST
-    if (!bubble.classList.contains('minimized')) {
-        console.log("Abbruch: Nicht minimiert"); // TEST
-        return;
-    }
-
         if (!bubble.classList.contains('minimized')) return;
 
-        bubbleIsDragging = false; 
-        const touch = e.touches[0];
-        
-        startX = touch.clientX;
-        startY = touch.clientY;
-        
-        // Holt die exakte aktuelle Position auf dem Bildschirm
+        isNavigationBlocked = true;
+        bubbleIsDragging = true; // SOFORT auf true setzen
+
         const rect = bubble.getBoundingClientRect();
         initialLeft = rect.left;
         initialTop = rect.top;
 
-        bubble.style.transition = 'none'; // Keine Verzögerung beim Ziehen
+        bubble.style.transition = 'none';
     }, { passive: true });
 
+    // Dieser Listener liegt auf document, damit der Finger auch mal 
+    // von der Bubble rutschen kann, OHNE dass der Drag abreißt.
     document.addEventListener('touchmove', (e) => {
-        if (startX === undefined || !bubble.classList.contains('minimized')) return;
+        // WICHTIG: Nur bewegen, wenn WIRKLICH die Bubble aktiv ist
+        if (!bubbleIsDragging || !bubble.classList.contains('minimized')) return;
 
-        const touch = e.touches[0];
-        const dx = touch.clientX - startX;
-        const dy = touch.clientY - startY;
-
-        // Ab 5 Pixel Bewegung gilt es als Drag
-        if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
-            bubbleIsDragging = true;
-            
-            // Wir setzen die Position direkt über die Styles
-            bubble.style.left = `${initialLeft + dx}px`;
-            bubble.style.top = `${initialTop + dy}px`;
+        if (Math.abs(currentX) > 5 || Math.abs(currentY) > 5) {
+            bubble.style.left = `${initialLeft + currentX}px`;
+            bubble.style.top = `${initialTop + currentY}px`;
         }
     }, { passive: false });
 
     document.addEventListener('touchend', () => {
-        if (!bubbleIsDragging) {
-            startX = undefined;
-            return;
-        }
+        if (!bubbleIsDragging) return;
 
-        // Magnet-Effekt (Snapping)
         snapToEdge(bubble);
-        
-        startX = undefined;
-        // Kurzer Delay für den Click-Blocker
-        setTimeout(() => { bubbleIsDragging = false; }, 50);
+
+        bubbleIsDragging = false;
+        setTimeout(() => { 
+            isNavigationBlocked = false; 
+        }, 50);
     });
 }
 
 function snapToEdge(el) {
     const screenWidth = window.innerWidth;
+    const screenHeight = window.innerHeight;
     const rect = el.getBoundingClientRect();
+    
+    // Sicherheitsabstände definieren
+    const margin = 20; // Rand links/rechts
+    const topMargin = 40; // Nicht hinter die Statusleiste/Header
+    const bottomMargin = 100; // Nicht hinter die Bottom-Nav
     
     el.style.transition = 'all 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28)';
     
-    // Snapping zur linken oder rechten Seite
+    // 1. Horizontales Snapping (Links oder Rechts)
     if (rect.left + rect.width / 2 < screenWidth / 2) {
-        el.style.left = '20px';
+        el.style.left = `${margin}px`;
     } else {
-        el.style.left = `${screenWidth - rect.width - 20}px`;
+        el.style.left = `${screenWidth - rect.width - margin}px`;
     }
+
+    // 2. Vertikale Grenzen prüfen (Verhindern, dass sie oben/unten verschwindet)
+    let finalTop = rect.top;
+
+    if (rect.top < topMargin) {
+        // Zu weit oben
+        finalTop = topMargin;
+    } else if (rect.top + rect.height > screenHeight - bottomMargin) {
+        // Zu weit unten (vor der Navigationsleiste)
+        finalTop = screenHeight - bottomMargin - rect.height;
+    }
+
+    el.style.top = `${finalTop}px`;
 }
 
 function toggleFilterBar() {
@@ -3403,6 +3397,56 @@ function toggleFilterBar() {
         const isHidden = filterbar.classList.contains('hidden');
         localStorage.setItem('filterBarHidden', isHidden);
     }
+}
+
+function getVolumeStats() {
+    // Wir initialisieren die Struktur basierend auf deinen WORKOUT_GROUPS
+    const stats = {
+        total: 0,
+        groups: {
+            push: { total: 0, subs: {} },
+            pull: { total: 0, subs: {} },
+            legs: { total: 0, subs: {} }
+        }
+    };
+
+    // Hilfs-Setup: subs in die richtigen Gruppen vor-eintragen
+    for (const [group, subArray] of Object.entries(WORKOUT_GROUPS)) {
+        subArray.forEach(subName => {
+            stats.groups[group].subs[subName] = 0;
+        });
+    }
+
+    trainingHistory.forEach(workout => {
+        if (!workout.exercises) return;
+
+        workout.exercises.forEach(ex => {
+            const exerciseVolume = ex.sets ? ex.sets.reduce((sum, set) => {
+                return sum + ((parseFloat(set.weight) || 0) * (parseInt(set.reps) || 0));
+            }, 0) : 0;
+
+            stats.total += exerciseVolume;
+
+            // Master-Abgleich für die Kategorie
+            const masterEx = userExercises.find(u => u.name === ex.name || u.id === ex.id);
+            
+            if (masterEx && masterEx.sub) {
+                const sub = masterEx.sub.toLowerCase().trim();
+
+                // Finde heraus, zu welcher Hauptgruppe (push/pull/legs) dieser sub gehört
+                const groupName = Object.keys(WORKOUT_GROUPS).find(key => 
+                    WORKOUT_GROUPS[key].includes(sub)
+                );
+
+                if (groupName) {
+                    stats.groups[groupName].total += exerciseVolume;
+                    stats.groups[groupName].subs[sub] += exerciseVolume;
+                }
+            }
+        });
+    });
+
+    return stats;
 }
 
 
@@ -3477,14 +3521,13 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
     btn.onclick = () => switchWorkoutTab(btn.dataset.tab);
 });
 
-//--- EXERCISE-SUB-MENU
-// document.querySelectorAll('.sub-group h3').forEach(header => {
-//     header.addEventListener('click', handleSubgroupToggle);
-// });
-
 //--- ACCORDIAN-MENUS
 document.addEventListener('click', toggleAccordion);
 
+//--- BACK TO DASHBOARD LOGO-CLICK
+document.querySelector('.app-logo').addEventListener('click', () => {
+showMainContent('dashboard');
+});
 
 
 
@@ -3505,6 +3548,45 @@ if (endBtn) endBtn.onclick = handleEndSessionClick;
 
 
 
+//--- TOUCH LISTENER ---// 
+
+document.addEventListener('touchstart', (e) => {
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+    // Wir gehen erst mal davon aus, dass nichts blockiert, 
+    // bis eine Spezial-Funktion (Bubble/Card) "Hier!" schreit.
+    isNavigationBlocked = false; 
+}, { passive: true });
+
+document.addEventListener('touchmove', (e) => {
+    // Diese Berechnung MUSS immer laufen, damit currentX/Y befüllt sind
+    currentX = e.touches[0].clientX - startX;
+    currentY = e.touches[0].clientY - startY;
+    
+    // Wenn die Bubble oder eine Card bewegt wird, verhindern wir das Scrollen der Seite
+    if (isNavigationBlocked && e.cancelable) {
+        e.preventDefault(); 
+    }
+}, { passive: false });
+
+document.addEventListener('touchend', (e) => {
+    const endX = e.changedTouches[0].clientX;
+    const endY = e.changedTouches[0].clientY;
+
+    // 1. WICHTIG: Wenn EINES der Flags noch aktiv ist ODER isNavigationBlocked true ist
+    if (isNavigationBlocked || isSwiping || bubbleIsDragging || isDragging) {
+        console.log("Navigation blockiert, da Spezial-Aktion aktiv war.");
+        // Hier KEIN Reset der Flags, das machen die Funktionen selbst mit setTimeout!
+        return; 
+    }
+
+    // 2. Nur wenn absolut nichts anderes aktiv war, darf die Navigation ran
+    handleMainSwipe(startX, startY, endX, endY);    
+
+    // Reset der Koordinaten
+    startX = 0; startY = 0; currentX = 0; currentY = 0;
+}, { passive: true });
+
 
 //--- OVERLAY ---// 
                                                                         {}              
@@ -3517,11 +3599,20 @@ const dragHandle = document.getElementById('drag-handle-container');
 if (dragHandle) {
     dragHandle.addEventListener('touchstart', handleOverlayDragStart, { passive: true });
     dragHandle.addEventListener('touchmove', handleOverlayDragMove, { passive: true });
-    dragHandle.addEventListener('touchend', handleOverlayDragEnd);
+    dragHandle.addEventListener('touchend', (e) => {
+        // 1. Verhindere, dass das Event zum 'document' hochwandert
+        // Dadurch wird handleMainSwipe NICHT aufgerufen
+        e.stopPropagation(); 
+        
+        // 2. Deine normale Logik aufrufen
+        handleOverlayDragEnd(e);
+    });
 }
 
 //--- ZURÜCK schließt das Overlay
-window.addEventListener('popstate', handlePopState);
+window.addEventListener('popstate', (event) => {
+    handleNavigationBack(event);
+});
 
 //--- EDIT BUTTON 
 document.getElementById('edit-exercise-btn').onclick = () => 
@@ -3589,8 +3680,16 @@ document.getElementById('profile-settings').addEventListener('click', renderProf
 //--- Backup Einstellungen öffnen
 document.getElementById('backup-settings').addEventListener('click', renderBackupSettings);
 
-//--- FILTER-BAR toggle 
-document.getElementById('filter-trigger').addEventListener('click', toggleFilterBar);
+//--- Statistik öffnen
+document.getElementById('statistics-settings').addEventListener('click', () => {
+showMainContent('statistics');
+});
+
+//--- Körperdaten öffnen
+document.getElementById('body-stats-settings').addEventListener('click', () => {
+showMainContent('body');
+});
+
 
 
 
