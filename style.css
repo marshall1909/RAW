@@ -1374,7 +1374,7 @@ button.filter-chip.active {
    ==================================================================================== */
 
 /* ==========================================
-   3.1 GREETING (Deaktiviert, aber im Code behalten)
+   3.1 LOGO
    ========================================== */
 
 
@@ -1407,64 +1407,10 @@ button.filter-chip.active {
     text-transform: uppercase;
 }
 
-.dashboard-greeting {
-    position: relative;
-    display: block;
-    text-align: center;
-    margin: 40px 0 20px 0;
-    padding: 25px 0;
-    font-size: 1.0rem;
-    font-weight: 900;
-    color: var(--text-high);
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    overflow: hidden; /* Verhindert, dass der 150% weite Shine horizontal scrollt */
-}
-
-/* Gemeinsame Basis für die Shine-Linien */
-.dashboard-greeting::before,
-.dashboard-greeting::after {
-    content: "";
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 150%;
-    height: 20px;
-    background-repeat: no-repeat;
-    pointer-events: none;
-}
-
-/* Oberer Streifen: Shine strahlt nach oben */
-.dashboard-greeting::before {
-    top: 0;
-    background: 
-        linear-gradient(90deg, transparent, var(--accent), transparent) no-repeat bottom / 100% 1px,
-        radial-gradient(ellipse at bottom, rgba(180, 45, 70, 0.4) 0%, transparent 70%) no-repeat bottom / 100% 100%;
-}
-
-/* Unterer Streifen: Shine strahlt nach unten */
-.dashboard-greeting::after {
-    bottom: 0;
-    background: 
-        linear-gradient(90deg, transparent, var(--accent), transparent) no-repeat top / 100% 1px,
-        radial-gradient(ellipse at top, rgba(180, 45, 70, 0.4) 0%, transparent 70%) no-repeat top / 100% 100%;
-}
-
 /* Container & Animations-Logik */
 #content-dashboard {
     width: 100%;
     text-align: center;
-}
-
-#greeting-text {
-    display: inline-block;
-    transition: opacity 0.8s ease-in-out, transform 0.8s ease-in-out;
-    will-change: opacity, transform;
-}
-
-.text-hidden {
-    opacity: 0 !important;
-    transform: translateY(5px);
 }
 
 /* ==========================================
@@ -1491,34 +1437,31 @@ button.filter-chip.active {
     transition: transform 0.1s ease, box-shadow 0.2s ease;
 }
 
-/* Kraft-Kategorie (Dezenter roter Schimmer) */
+
 .stat-card.strength {
-    background: linear-gradient(145deg, var(--bg-card), rgba(180, 45, 70, 0.08));
+    background: linear-gradient(145deg, var(--bg-card), rgba(45, 164, 180, 0.08));
     border-left: 3px solid var(--accent);
 }
 
-/* Körper-Kategorie (Dezenter blauer Schimmer) */
 .stat-card.body {
-    background: linear-gradient(145deg, var(--bg-card), rgba(74, 144, 226, 0.05));
-    border-left: 3px solid #4a90e2;
+    background: linear-gradient(145deg, var(--bg-card), rgba(45, 164, 180, 0.08));
+    border-left: 3px solid var(--accent);
 }
 
-/* Volumen-Kategorie (Dezenter Gold/Gelb Schimmer) */
 .stat-card.volume {
-    background: linear-gradient(145deg, var(--bg-card), rgba(212, 175, 55, 0.05));
-    border-left: 3px solid #d4af37;
+    background: linear-gradient(145deg, var(--bg-card), rgba(45, 164, 180, 0.08));
+    border-left: 3px solid var(--accent);
 }
 
-/* Volumen-Kategorie (Dezenter Gold/Gelb Schimmer) */
-.stat-card.cardio {
-    background: linear-gradient(145deg, var(--bg-card), rgba(212, 175, 55, 0.05));
-    border-left: 3px solid #59d437;
+.stat-card.sessions {
+    background: linear-gradient(145deg, var(--bg-card), rgba(45, 164, 180, 0.08));
+    border-left: 3px solid var(--accent);
 }
 
 /* Standard Accent-Karte */
 .stat-card.accent {
     border-left: 4px solid var(--accent);
-    background: linear-gradient(145deg, var(--bg-card), rgba(180, 45, 70, 0.05));
+    background: linear-gradient(145deg, var(--bg-card), rgba(255, 255, 255, 0.08));
 }
 
 .stat-label {
@@ -1560,6 +1503,52 @@ button.filter-chip.active {
 .clickable-card:active {
     transform: scale(0.96);
     filter: brightness(1.1);
+}
+
+/* ACHIEVEMENTS on DASHBOARD */
+
+.achievement-shortcut {
+    margin: 200px auto 20px auto; /* Viel Abstand nach oben, damit es "alleine" steht */
+    padding: 8px 12px;
+    display: flex;
+    width: fit-content; /* Passt sich dem Inhalt an, statt volle Breite */
+    min-width: 160px;   /* Verhindert, dass es zu sehr schrumpft */
+    max-width: 200px; 
+    justify-content: center; /* Inhalt mittig */
+    gap: 15px;          /* Abstand zwischen Icon-Text und Stats */
+    align-items: center;
+    background: transparent;
+    border: none;
+    font-size: 0.75rem; /* Noch etwas kleiner */
+    color: rgba(149, 165, 166, 0.4); /* Sehr dezentes Grau */
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.shortcut-content {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.shortcut-content i {
+    color: var(--accent);
+    opacity: 1; /* Icon fast durchsichtig */
+    font-size: 1rem;
+}
+
+.shortcut-stats {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.3); /* Die Zahlen auch sehr dezent */
+}
+
+/* Kleiner Effekt beim Drauftippen */
+.achievement-shortcut:active {
+    transform: scale(0.95);
+    color: rgba(255, 255, 255, 0.6);
 }
 
 /* ==========================================
@@ -1618,19 +1607,11 @@ button.filter-chip.active {
 
 .picker-close {
     position: absolute;
-    right: 0;
-    top: 5px;
-    background: rgba(255, 255, 255, 0.05);
-    border: none;
-    color: #fff;
-    width: 34px;
-    height: 34px;
-    border-radius: 10px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    top: 1px; right: 5px;
+    background: none; border: none;
+    color: white; font-size: 1.2rem;
+    opacity: 0.3;
     cursor: pointer;
-    transition: all 0.2s ease;
 }
 
 /* Der Gruppen-Header - nutzt jetzt zusätzlich .accordion-header */
@@ -2633,18 +2614,19 @@ button.filter-chip.active {
    8. BODY STATS SECTION
    ========================================== */
 
-#content-body { padding: 10px 20px; }
+#content-body { padding: 10px 15px; }
+
 .stats-grid { 
     display: grid; 
     grid-template-columns: 1fr 1fr; 
     gap: 15px; 
-    margin-bottom: 25px; 
+    margin-bottom: 20px; 
 }
 
 .input-group { 
     display: flex; 
     flex-direction: column; 
-    gap: 8px; 
+    gap: 6px; 
 }
 
 .input-group label { 
@@ -2713,7 +2695,7 @@ button.filter-chip.active {
 /* ==========================================
    9.0 BODYSTATS HISTORY SECTION
    ========================================== */
-/* ÜBERSCHRIFT: "LETZTER EINTRAG" */
+/* ÜBERSCHRIFT: "LETZTE WERTE" */
 
 .stats-history h3 {
     text-align: center;
@@ -3067,13 +3049,14 @@ button.filter-chip.active {
 
 .detail-close-btn {
     display: flex;
-    flex-shrink: 0;
-    background: var(--bg-input);
-    border: solid 1px var(--border);
-    color: var(--text-high);
-    width: 36px; height: 36px;
-    border-radius: 10px;
-    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;    
+    top: 10px; right: 15px;
+    background: none; border: none;
+    color: white; font-size: 1.2rem;
+    opacity: 0.3;
+    cursor: pointer;
+    align-items: center; 
+    justify-content: center;
     cursor: pointer;
 }
 
@@ -3614,12 +3597,34 @@ button.filter-chip.active {
 }
 
 .statistics-section-header .section-title {
-    font-size: 1.8rem;
-    font-weight: 800;
+   text-align: center;
+    margin:5px;    
+    position: relative; /* Wichtig für die Positionierung des Strichs */
+    padding:15px; /* Platz für den Strich unter dem Text */
+    color: var(--text-mid);
     text-transform: uppercase;
+    font-size: 1rem;
     letter-spacing: 2px;
-    margin-bottom: 5px;
-    color: var(--accent-color); /* Nutzt deine rote/orange Akzentfarbe */
+}
+
+.statistics-section-header .section-title::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 10%;
+    right: 10%;
+    height: 2px;
+    background: linear-gradient(to right, transparent, var(--border), transparent);
+}
+
+.statistics-section-header .section-title::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 15%; /* Etwas kürzerer Strich sieht unter Titeln oft besser aus */
+    right: 15%;
+    height: 2px;
+    background: linear-gradient(to right, transparent, var(--border), transparent);
 }
 
 .statistics-section-header .section-subtitle {
@@ -3671,7 +3676,7 @@ button.filter-chip.active {
 .hero-label { font-size: 0.9rem; opacity: 0.8; text-transform: uppercase; letter-spacing: 1.5px; }
 
 
-.stats-grid {
+.statistics-grid {
     display: grid;
     grid-template-columns: 1fr;
     gap: 15px;
@@ -3685,8 +3690,8 @@ button.filter-chip.active {
     border-left: 5px solid var(--accent);
 }
 
-.group-header { display: flex; align-items: center; gap: 10px; font-weight: bold; margin-bottom: 8px; opacity: 0.8; }
-.group-value { font-size: 1.6rem; font-weight: 700; margin-bottom: 12px; }
+.group-header { display: flex; font-size:1.4rem; color: var(--text-mid); font-weight: bold;}
+.group-value { font-size: 1.2rem; font-weight: bold; margin-bottom: 12px; }
 
 .sub-list {
     display: flex;
@@ -3704,6 +3709,289 @@ button.filter-chip.active {
 
 .sub-item span:first-child { color: #95a5a6; text-transform: capitalize; }
 .sub-item span:last-child { font-weight: 600; color: #ecf0f1; }
+
+
+
+/* ====================================================================================
+   13. ACHIEVEMENTS CONTENT
+   ==================================================================================== */
+
+.achievements-section-header {
+    text-align: center;
+    padding: 20px 0 10px 0;
+    margin-bottom: 10px;
+}
+
+.achievements-section-header .section-title {
+   text-align: center;
+    margin:5px;    
+    position: relative; /* Wichtig für die Positionierung des Strichs */
+    padding:15px; /* Platz für den Strich unter dem Text */
+    color: var(--text-mid);
+    text-transform: uppercase;
+    font-size: 1rem;
+    letter-spacing: 2px;
+}
+
+.achievements-section-header .section-title::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 10%;
+    right: 10%;
+    height: 2px;
+    background: linear-gradient(to right, transparent, var(--border), transparent);
+}
+
+.achievements-section-header .section-title::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 15%; /* Etwas kürzerer Strich sieht unter Titeln oft besser aus */
+    right: 15%;
+    height: 2px;
+    background: linear-gradient(to right, transparent, var(--border), transparent);
+}
+
+.achievements-section-header .section-subtitle {
+    font-size: 0.9rem;
+    opacity: 0.6;
+    font-style: italic;
+}
+
+.achievements-grid {
+    display: grid;
+    /* Erzeugt zwei gleich große Spalten */
+    grid-template-columns: 1fr 1fr; 
+    gap: 10px; /* Etwas engerer Abstand für mehr Platz */
+    padding: 0 10px 30px 10px;
+}
+
+.achievement-card {
+    display: flex;
+    flex-direction: column; /* Icon über dem Text */
+    align-items: center;
+    text-align: center;
+    gap: 8px;
+    padding: 15px 10px;
+    min-height: 120px; /* Einheitliche Höhe für das Grid */
+    transition: all 0.3s ease;
+    position: relative;
+    justify-content: center;
+}
+
+/* Locked & Unlocked bleiben gleich, aber wir passen die Borders an */
+.achievement-card.locked {
+    opacity: 0.4;
+    filter: grayscale(1);
+    border: 1px solid rgba(255,255,255,0.05);
+}
+
+.achievement-card.unlocked {
+    border: 1px solid rgba(var(--accent-rgb), 0.3); /* Subtiler Rahmen statt dicker Border links */
+    background: linear-gradient(135deg, rgba(231, 76, 60, 0.1) 0%, transparent 100%);
+}
+
+.achievement-icon-wrapper {
+    font-size: 1.8rem; /* Etwas größer, da es jetzt zentral steht */
+    margin-bottom: 4px;
+    color: var(--accent-color);
+}
+
+.achievement-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.achievement-card .stat-label {
+    font-size: 0.85rem;
+    font-weight: bold;
+    line-height: 1.2;
+}
+
+.achievement-desc {
+    font-size: 0.7rem; /* Kleiner, damit es nicht umbricht */
+    opacity: 0.6;
+    margin-top: 4px;
+    display: -webkit-box;
+    line-clamp: 2;
+    -webkit-line-clamp: 2; /* Maximal 2 Zeilen Text */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* Der Checkmarker wandert nach oben rechts in die Ecke */
+.badge-check {
+    position: absolute;
+    right: 8px;
+    top: 8px;
+    color: #2ecc71;
+    font-size: 0.8rem;
+}
+
+/* Basis-Stile für die Level-Badges */
+.badge-level {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    font-size: 0.6rem;
+    background: rgba(255,255,255,0.1);
+    padding: 2px 6px;
+    border-radius: 10px;
+    color: var(--text-mid);
+}
+
+/* Level Farben */
+.achievement-card.level-1 { border: 1px solid #cd7f32; } /* Bronze */
+.achievement-card.level-2 { border: 1px solid #c0c0c0; } /* Silber */
+.achievement-card.level-3 { border: 1px solid #ffd700; } /* Gold */
+.achievement-card.level-4 { border: 1px solid #e5e4e2; box-shadow: 0 0 10px rgba(255,255,255,0.2); } /* Platin */
+
+/* Locked bleibt dezent */
+.achievement-card.locked { opacity: 0.3; filter: grayscale(1); }
+
+
+/* Achievement Modal */
+
+.achievement-modal-overlay {
+    /* Fixed statt Absolute, damit es beim Scrollen stehen bleibt */
+    position: fixed; 
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    
+    /* Hintergrund abdunkeln */
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(8px);
+    
+    /* Über alles andere legen (Nav, Header, Karten) */
+    z-index: 9999; 
+    
+    /* Perfekte Zentrierung des Inhalts */
+    display: flex;
+    align-items: center;    /* Vertikal mittig */
+    justify-content: center; /* Horizontal mittig */
+    
+    /* Sichtbarkeit steuern */
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+.achievement-modal-content {
+    width: 90%;             /* Fast volle Breite am Handy */
+    max-width: 400px;       /* Aber nicht zu breit auf Tablets */
+    background: #1a1a1a;
+    border-radius: 20px;    /* Abgerundete Ecken an allen Seiten */
+    padding: 30px 20px;
+    position: relative;
+    transform: scale(0.8);  /* Startet etwas kleiner */
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); /* "Bouncy" Effekt */
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Wenn das Modal aktiv ist */
+.achievement-modal-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.achievement-modal-overlay.active .achievement-modal-content {
+    transform: scale(1);    /* Springt auf Originalgröße */
+}
+
+.achievement-modal-close-btn {
+    position: absolute;
+    top: 10px; right: 15px;
+    background: none; border: none;
+    color: white; font-size: 1.8rem;
+    opacity: 0.3;
+    cursor: pointer;
+}
+
+.achievement-modal-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Zentriert Icon und H3 horizontal */
+    width: 100%;
+}
+
+.achievement-modal-header h3 {
+    font-size: 1.1rem;
+    margin-bottom: 5px;
+    letter-spacing: 0.5px;
+}
+
+.achievement-modal-main-icon { 
+    font-size: 2.2rem; /* Kleineres, dezenteres Icon */
+    color: var(--accent-color); 
+    margin-bottom: 8px; 
+}
+
+
+.achievement-modal-progress-info {
+    text-align: center;
+    font-size: 0.75rem;
+    color: var(--text-mid);
+    margin-bottom: 20px;
+    padding: 0 10px;
+}
+
+.achievement-modal-levels-list {
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Zentriert die Rows */
+    gap: 8px;
+}
+
+.achievement-modal-level-row {
+    display: flex;
+    flex-direction: row; /* Stufen-Nummer links vom Text */
+    align-items: center;
+    justify-content: flex-start; /* Startet links für die Reihe */
+    width: 100%;
+    padding: 12px 15px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.02);
+    gap: 15px; /* Abstand zwischen Zahl und Text */
+    transition: all 0.2s ease;
+}
+
+.achievement-modal-level-row.reached { opacity: 1; background: rgba(46, 204, 113, 0.1); }
+.achievement-modal-level-row.next { opacity: 1; border: 1px dashed var(--accent-color); }
+
+.level-indicator {
+    flex-shrink: 0; /* Verhindert, dass der Kreis gequetscht wird */
+    width: 28px;
+    height: 28px;
+    background: #333;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700rem;
+    font-size: 0.9rem;
+}
+
+.level-text {
+    text-align: left; /* Text innerhalb der Stufe linksbündig zum Kreis */
+    flex-grow: 1;
+}
+
+.achievement-modal-level-row i {
+    margin-top: 0;
+    margin-left: auto; /* Schiebt das Icon nach rechts */
+    font-size: 1rem;
+    color: #2ecc71;
+}
+
+.reached .level-indicator { background: #2ecc71; color: white; }
+.level-label { font-weight: bold; font-size: 0.9rem; }
+.level-desc { font-size: 0.75rem; color: #888; }
+
+
+
 
 
 

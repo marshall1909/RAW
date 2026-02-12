@@ -72,6 +72,8 @@ let isDragging = false;
 let isSwiping = false;
 let bubbleIsDragging = false;
 
+// ARRAYS 
+
 const WORKOUT_GROUPS = {
     push: ['brust', 'schultern', 'trizeps'],
     pull: ['rücken', 'ruecken', 'bizeps'],
@@ -79,6 +81,42 @@ const WORKOUT_GROUPS = {
     // core: ['bauch', 'core', 'unterer rücken']
 };
 
+const ACHIEVEMENT_LIST = [
+    { 
+        id: 'ton_club', 
+        title: 'Tonnen-Jäger', 
+        icon: 'fa-weight-hanging',
+        // Hier definieren wir die Stufen
+        levels: [
+            { threshold: 1000, label: 'Bronze', desc: '1.000 kg bewegt' },
+            { threshold: 5000, label: 'Silber', desc: '5.000 kg bewegt' },
+            { threshold: 10000, label: 'Gold', desc: '10.000 kg bewegt' },
+            { threshold: 50000, label: 'Platin', desc: '50.000 kg bewegt' }
+        ],
+        // Check-Logik: Welches ist das höchste erreichte Level?
+        getCurrentLevel: function() {
+            const total = getVolumeStats().total;
+            // Wir filtern alle Level, deren Schwelle erreicht wurde
+            const reached = this.levels.filter(l => total >= l.threshold);
+            return reached.length > 0 ? { ...reached[reached.length - 1], index: reached.length } : null;
+        }
+    },
+    {
+        id: 'workout_count',
+        title: 'Dauergast',
+        icon: 'fa-calendar-check',
+        levels: [
+            { threshold: 1, label: 'Anfänger', desc: '1. Workout' },
+            { threshold: 10, label: 'Fortgeschritten', desc: '10 Workouts' },
+            { threshold: 50, label: 'Profi', desc: '50 Workouts' }
+        ],
+        getCurrentLevel: function() {
+            const count = trainingHistory.length;
+            const reached = this.levels.filter(l => count >= l.threshold);
+            return reached.length > 0 ? { ...reached[reached.length - 1], index: reached.length } : null;
+        }
+    }
+];
 
 
 
@@ -375,7 +413,7 @@ function cleanupSession() {
 
 
 function showMainContent(target) {
-    const mainSections = ['dashboard', 'exercises', 'settings', 'history', 'body', 'statistics'];
+    const mainSections = ['dashboard', 'exercises', 'settings', 'history', 'body', 'statistics', 'achievements'];
     mainSections.forEach(id => {
         const el = document.getElementById('content-' + id);
         if (el) el.classList.toggle('hidden', id !== target);
@@ -476,6 +514,10 @@ function showMainContent(target) {
     if (target === 'statistics') {
         renderStatistics();
     }
+
+    if (target === 'achievements') {
+    renderAchievements();
+}
 
     if (!window.history.state || window.history.state.target !== target) {
         window.history.pushState({ target: target }, "");
@@ -1418,6 +1460,15 @@ function updateDashboard() {
     if (bodyCard) {
         bodyCard.onclick = () => showMainContent('body');
         bodyCard.classList.add('clickable-card');
+    }
+
+    // Achievements 
+    // In updateDashboard() am Ende:
+    const unlockedCount = ACHIEVEMENT_LIST.filter(ach => ach.getCurrentLevel() !== null).length;
+    const dashAchievCount = document.getElementById('dash-achievements-count');
+
+    if (dashAchievCount) {
+        dashAchievCount.innerText = `${unlockedCount}/${ACHIEVEMENT_LIST.length}`;
     }
 }
 
@@ -2641,6 +2692,38 @@ function renderStatistics() {
     });
 }
 
+function renderAchievements() {
+    const container = document.getElementById('achievements-container');
+    if (!container) return;
+    container.innerHTML = '';
+
+    ACHIEVEMENT_LIST.forEach(ach => {
+        const levelData = ach.getCurrentLevel(); // Hol dir das aktuelle Level
+        const isUnlocked = levelData !== null;
+        
+        const card = document.createElement('div');
+        // Wir fügen eine Klasse für das Level hinzu (z.B. level-1, level-2)
+        const levelClass = isUnlocked ? `level-${levelData.index}` : 'locked';
+        card.className = `card-template achievement-card ${levelClass}`;
+        
+        card.innerHTML = `
+            <div class="achievement-icon-wrapper">
+                <i class="fa-solid ${ach.icon}"></i>
+            </div>
+            <div class="achievement-info">
+                <span class="stat-label">${ach.title} ${isUnlocked ? '(' + levelData.label + ')' : ''}</span>
+                <div class="achievement-desc">${isUnlocked ? levelData.desc : 'Noch nicht erreicht'}</div>
+            </div>
+            ${isUnlocked ? `<div class="badge-level">Lvl ${levelData.index}</div>` : ''}
+        `;
+
+        // Click-Event für die Vorschau der nächsten Stufen
+        card.onclick = () => showAchievementDetails(ach);
+        
+        container.appendChild(card);
+    });
+}
+
 
                                             {}
 // ==========================================
@@ -3449,6 +3532,55 @@ function getVolumeStats() {
     return stats;
 }
 
+function showAchievementDetails(ach) {
+    const modal = document.getElementById('achievement-modal');
+    const modalBody = document.getElementById('achievement-modal-body');
+    const current = ach.getCurrentLevel();
+    const nextIndex = current ? current.index : 0;
+    const next = ach.levels[nextIndex];
+    
+    const currentVal = (ach.id === 'ton_club') ? getVolumeStats().total : trainingHistory.length;
+    const unit = (ach.id === 'ton_club') ? 'kg' : 'Workouts';
+
+    let levelsHtml = ach.levels.map((lvl, idx) => {
+    const isReached = current && idx < current.index;
+    const isNext = idx === nextIndex;
+    return `
+        <div class="achievement-modal-level-row ${isReached ? 'reached' : ''} ${isNext ? 'next' : ''}">
+            <div class="level-indicator">${idx + 1}</div>
+            <div class="level-text">
+                <div class="level-label">${lvl.label}</div>
+                <div class="level-desc">${lvl.threshold.toLocaleString()} ${unit}</div>
+            </div>
+            ${isReached ? '<i class="fa-solid fa-circle-check"></i>' : ''}
+        </div>
+    `;
+    }).join('');
+
+    modalBody.innerHTML = `
+        <div class="achievement-modal-header">
+            <i class="fa-solid ${ach.icon} achievement-modal-main-icon"></i>
+            <h3>${ach.title}</h3>
+        </div>
+        <div class="achievement-modal-progress-info">
+            ${next ? `Noch <strong>${(next.threshold - currentVal).toLocaleString()} ${unit}</strong> bis zum nächsten Level!` : 'Maximale Stufe erreicht! 🔥'}
+        </div>
+        <div class="achievement-modal-levels-list">
+            ${levelsHtml}
+        </div>
+    `;
+
+    modal.classList.remove('hidden');
+    // Kurze Verzögerung für die Animation
+    setTimeout(() => modal.classList.add('active'), 10);
+}
+
+function closeAchievementModal() {
+    const modal = document.getElementById('achievement-modal');
+    modal.classList.remove('active');
+    setTimeout(() => modal.classList.add('hidden'), 300);
+}
+
 
                                             {}
 // ==========================================
@@ -3688,6 +3820,11 @@ showMainContent('statistics');
 //--- Körperdaten öffnen
 document.getElementById('body-stats-settings').addEventListener('click', () => {
 showMainContent('body');
+});
+
+//--- Achievements öffnen
+document.getElementById('achievements-settings').addEventListener('click', () => {
+showMainContent('achievements');
 });
 
 

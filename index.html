@@ -99,7 +99,7 @@
 
     <main id="main-content-area">
 
-        <!-- DASHBOARD -->
+        <!------------- DASHBOARD ------------->
 
         <section id="content-dashboard" class="tab-content">
 
@@ -109,34 +109,48 @@
             </div>
 
             <div class="dashboard-grid">
-
+                <!-- sessions -->
                 <div class="card-template card-accent-left border-accent stat-card sessions">
                     <span class="stat-label">Workouts</span>
                     <div class="stat-value" id="dash-session-count">--</div>
                     <div class="stat-meta">diesen Monat</div>
                 </div>
-
+                <!-- strength -->
                 <div class="card-template card-accent-left border-accent stat-card strength">
                     <span class="stat-label">Top Satz Bank</span>
                     <div class="stat-value" id="dash-bench-pr">0<span class="unit">kg</span></div>
                     <div class="stat-meta">0 Reps</div>
                 </div>
-
+                <!-- body -->
                 <div class="card-template card-accent-left border-accent stat-card body">
                     <span class="stat-label">Gewicht</span>
                     <div class="stat-value" id="dash-weight">0<span class="unit">kg</span></div>
                     <div class="stat-meta" id="dash-weight-date">Stand: 10.01.</div>
                 </div>
-
+                <!-- volume -->
                 <div class="card-template card-accent-left border-accent stat-card volume">
                     <span class="stat-label">Gesamtmasse</span>
                     <div class="stat-value" id="dash-total-volume">0<span class="unit">t</span></div>
                     <div class="stat-meta" id="dash-total-volume-kg">bewegt</div>
                 </div>
             </div>
+
+            <!-- achievements -->
+
+            <div class="achievement-shortcut card-template" onclick="showMainContent('achievements')">
+                <div class="shortcut-content">
+                    <i class="fa-solid fa-medal"></i>
+                    <span>Deine Erfolge</span>
+                </div>
+                <div class="shortcut-stats">
+                    <span id="dash-achievements-count">0/0</span>                    
+                </div>
+            </div>
         </section>
 
-        <!-- EXERCISES -->
+
+
+        <!------------- EXERCISES ------------->
 
         <section id="content-exercises" class="tab-content hidden">
             <div id="workout-category-container">
@@ -198,7 +212,7 @@
             </div>
         </section>
 
-        <!-- BODYSTATS -->
+        <!------------- BODYSTATS ------------->
 
         <section id="content-body" class="tab-content hidden">
             <div class="stats-card">
@@ -238,7 +252,7 @@
             </div>
         </section>
 
-        <!-- WORKOUT HISTORY -->
+        <!------------- WORKOUT HISTORY ------------->
 
         <section id="content-history" class="tab-content hidden">
             <div class="workout-swipe-card">
@@ -254,7 +268,7 @@
             </div>
         </section>
 
-        <!-- SETTINGS -->
+        <!------------- SETTINGS ------------->
 
         <section id="content-settings" class="tab-content hidden">
             <div class="settings-grid">
@@ -267,59 +281,81 @@
                     <i class="fa-solid fa-download download"></i>
                     <span class="settings-label">Backup & Import</span>
                 </div>
-                <div id="statistics-settings" class="card-template card-accent-left border-accent settings-card statistics">
+                <div id="statistics-settings"
+                    class="card-template card-accent-left border-accent settings-card statistics">
                     <i class="fa-solid fa-chart-line"></i>
                     <span class="settings-label">Statistik</span>
                 </div>
-                <div id="body-stats-settings" class="card-template card-accent-left border-accent settings-card body-stats">
+                <div id="body-stats-settings"
+                    class="card-template card-accent-left border-accent settings-card body-stats">
                     <i class="fa-solid fa-weight-scale"></i>
                     <span class="settings-label">Körperdaten</span>
                 </div>
+                <div id="achievements-settings"
+                    class="card-template card-accent-left border-accent settings-card achievements">
+                    <i class="fa-solid fa-trophy"></i>
+                    <span class="settings-label">Achievements</span>
+                </div>
+            </div>
+        </section>
+
+
+        <!------------- STATISTIK ------------->
+
+        <section id="content-statistics" class="main-section hidden">
+            <div class="statistics-section-header">
+                <h2 class="section-title">Power-Statistik</h2>
+                <p class="section-subtitle">Deine bewegte Gesamtmasse</p>
+            </div>
+
+            <div class="total-volume-hero">
+                <div class="hero-label">Gesamtmasse</div>
+                <div class="hero-value" id="stats-grand-total">0<span class="unit">t</span></div>
+            </div>
+
+            <div class="statistics-grid">
+                <div class="stat-group-card push-accent">
+                    <div class="group-header">
+                        <span>PUSH</span>
+                    </div>
+                    <div class="group-value" id="stats-push-total">0 kg</div>
+                    <div class="sub-list" id="stats-push-subs"></div>
+                </div>
+
+                <div class="stat-group-card pull-accent">
+                    <div class="group-header">
+                        <span>PULL</span>
+                    </div>
+                    <div class="group-value" id="stats-pull-total">0 kg</div>
+                    <div class="sub-list" id="stats-pull-subs"></div>
+                </div>
+
+                <div class="stat-group-card legs-accent">
+                    <div class="group-header">
+                        <span>BEINE</span>
+                    </div>
+                    <div class="group-value" id="stats-legs-total">0 kg</div>
+                    <div class="sub-list" id="stats-legs-subs"></div>
+                </div>
+            </div>
+        </section>
+
+        <!------------- ACHIEVEMENTS ------------->
+
+        <section id="content-achievements" class="main-section hidden">
+            <div class="achievements-section-header">
+                <h2 class="section-title">Erfolge</h2>
+                <p class="section-subtitle">Deine Meilensteine & Trophäen</p>
+            </div>
+
+            <div class="achievements-grid" id="achievements-container">
             </div>
         </section>
     </main>
 
-    <!-- STATISTIK -->
 
-    <section id="content-statistics" class="main-section hidden" >
-        <div class="statistics-section-header">
-            <h2 class="section-title">Power-Statistik</h2>
-            <p class="section-subtitle">Deine bewegte Gesamtmasse</p>
-        </div>
 
-        <div class="total-volume-hero">
-            <div class="hero-label">Gesamtmasse</div>
-            <div class="hero-value" id="stats-grand-total">0<span class="unit">t</span></div>            
-        </div>
-
-        <div class="stats-grid">
-            <div class="stat-group-card push-accent">
-                <div class="group-header">                    
-                    <span>PUSH</span>
-                </div>
-                <div class="group-value" id="stats-push-total">0 kg</div>
-                <div class="sub-list" id="stats-push-subs"></div>
-            </div>
-
-            <div class="stat-group-card pull-accent">
-                <div class="group-header">                    
-                    <span>PULL</span>
-                </div>
-                <div class="group-value" id="stats-pull-total">0 kg</div>
-                <div class="sub-list" id="stats-pull-subs"></div>
-            </div>
-
-            <div class="stat-group-card legs-accent">
-                <div class="group-header">                    
-                    <span>BEINE</span>
-                </div>
-                <div class="group-value" id="stats-legs-total">0 kg</div>
-                <div class="sub-list" id="stats-legs-subs"></div>
-            </div>
-        </div>
-    </section>
-
-    <!-- EXERCISE OVERLAY -->
+    <!--------------- EXERCISE OVERLAY --------------->
 
     <div id="exercise-overlay" class="overlay hidden">
         <div id="drag-handle-container">
@@ -417,12 +453,12 @@
             </button>
         </nav>
         <div class="meta">
-            <p class="app-version">beta v0.7.6</p>
+            <p class="app-version">beta v0.8.0</p>
             <p class="copyright">&copy; by Marshall</p>
         </div>
     </footer>
 
-    <!-- DIE MODALS -->
+    <!------------- DIE MODALS ------------->
 
     <div id="confirm-modal" class="overlay hidden">
         <div class="modal-card">
@@ -497,13 +533,15 @@
         </div>
     </div>
 
-    <!-- <div id="quick-resume-btn" class="hidden">
-        <div class="resume-content">
-            <div class="resume-icon">
-                <i class="fa-solid fa-dumbbell"></i>
+    <div id="achievement-modal" class="achievement-modal-overlay hidden">
+        <div class="achievement-modal-content">
+            <button class="achievement-modal-close-btn" onclick="closeAchievementModal()">&times;</button>
+            <div id="achievement-modal-body">
             </div>
         </div>
-    </div> -->
+    </div>
+
+    <!------------- FLOATING BUBBLE ------------->
 
     <div id="rest-timer-container" class="floating-timer hidden">
         <div class="timer-content">
