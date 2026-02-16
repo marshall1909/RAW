@@ -1,40 +1,3 @@
-// ==========================================
-//  APP LOCK!
-// ==========================================
-
-
-// (function checkAccess() {
-//     const SECRET_CODE = "#schw3rundf4lsch!"; // DEIN CODE HIER (Ändern!)
-//     const isUnlocked = localStorage.getItem('app_unlocked');
-
-//     if (isUnlocked === 'true') return; // Schon freigeschaltet
-
-//     // Overlay erstellen
-//     const lock = document.createElement('div');
-//     lock.id = 'app-lock-screen';
-//     lock.innerHTML = `
-//         <h2 style="color:white; font-family: sans-serif;">ACCESS RESTRICTED</h2>
-//         <input type="password" class="lock-input" id="code-input" placeholder="••••" inputmode="numeric">
-//         <button class="lock-btn" id="unlock-btn">ENTER</button>
-//     `;
-//     document.body.appendChild(lock);
-
-//     const unlock = () => {
-//         const input = document.getElementById('code-input').value;
-//         if (input === SECRET_CODE) {
-//             localStorage.setItem('app_unlocked', 'true');
-//             lock.style.opacity = '0';
-//             setTimeout(() => lock.remove(), 500);
-//             if (navigator.vibrate) navigator.vibrate(20);
-//         } else {
-//             document.getElementById('code-input').style.borderColor = 'red';
-//             if (navigator.vibrate) navigator.vibrate([50, 50, 50]);
-//         }
-//     };
-
-//     document.getElementById('unlock-btn').onclick = unlock;
-//     document.getElementById('code-input').onkeypress = (e) => { if(e.key === 'Enter') unlock(); };
-// })();
 
                                                                                         {}
 // ==================================================================================== //
@@ -86,38 +49,91 @@ const ACHIEVEMENT_LIST = [
         id: 'ton_club', 
         title: 'Tonnen-Jäger', 
         icon: 'fa-weight-hanging',
-        // Hier definieren wir die Stufen
+        unit: 'kg',
+        infoText: `Jedes bewegte Kilo zählt!`,
         levels: [
             { threshold: 1000, label: 'Bronze', desc: '1.000 kg bewegt' },
-            { threshold: 5000, label: 'Silber', desc: '5.000 kg bewegt' },
-            { threshold: 10000, label: 'Gold', desc: '10.000 kg bewegt' },
-            { threshold: 50000, label: 'Platin', desc: '50.000 kg bewegt' }
+            { threshold: 50000, label: 'Silber', desc: '50.000 kg bewegt' },
+            { threshold: 100000, label: 'Gold', desc: '100.000 kg bewegt' },
+            { threshold: 500000, label: 'Platin', desc: '500.000 kg bewegt' }
         ],
-        // Check-Logik: Welches ist das höchste erreichte Level?
         getCurrentLevel: function() {
             const total = getVolumeStats().total;
-            // Wir filtern alle Level, deren Schwelle erreicht wurde
             const reached = this.levels.filter(l => total >= l.threshold);
-            return reached.length > 0 ? { ...reached[reached.length - 1], index: reached.length } : null;
+            // IMMER ein Objekt zurückgeben, damit 'index' nicht undefined ist
+            return { index: reached.length, currentVal: total };
         }
     },
     {
         id: 'workout_count',
-        title: 'Dauergast',
+        title: 'Stammgast',
         icon: 'fa-calendar-check',
+        unit: 'Workouts',
+        infoText: `Jedes Workout zählt!`,
         levels: [
-            { threshold: 1, label: 'Anfänger', desc: '1. Workout' },
-            { threshold: 10, label: 'Fortgeschritten', desc: '10 Workouts' },
-            { threshold: 50, label: 'Profi', desc: '50 Workouts' }
+            { threshold: 1, label: 'Bronze', desc: '1. Workout' },
+            { threshold: 10, label: 'Silber', desc: '10 Workouts' },
+            { threshold: 50, label: 'Gold', desc: '50 Workouts' },
+            { threshold: 100, label: 'Platin', desc: '100 Workouts' }
         ],
         getCurrentLevel: function() {
             const count = trainingHistory.length;
             const reached = this.levels.filter(l => count >= l.threshold);
-            return reached.length > 0 ? { ...reached[reached.length - 1], index: reached.length } : null;
+            return { index: reached.length, currentVal: count };
+        }
+    },
+    {
+        id: 'rep_machine',
+        title: 'Rep-Maschine',
+        icon: 'fa-arrows-rotate',
+        unit: 'Reps',
+        infoText: `Jede Wiederholung zählt!`, 
+        levels: [
+            { threshold: 1000, label: 'Bronze', desc: '1.000 Wiederholungen' },
+            { threshold: 10000, label: 'Silber', desc: '10.000 Wiederholungen' },
+            { threshold: 50000, label: 'Gold', desc: '50.000 Wiederholungen' },
+            { threshold: 100000, label: 'Platin', desc: '100.000 Wiederholungen' }
+        ],
+        getCurrentLevel: function() {
+            const totalReps = trainingHistory.reduce((sum, workout) => {
+                return sum + workout.exercises.reduce((exSum, ex) => {
+                    return exSum + ex.sets.reduce((setSum, set) => setSum + (parseInt(set.reps) || 0), 0);
+                }, 0);
+            }, 0);
+            const reached = this.levels.filter(l => totalReps >= l.threshold);
+            return { index: reached.length, currentVal: totalReps };
+        }
+    },
+    {
+        id: 'weekly_streak',
+        title: 'Wochen-Streak',
+        icon: 'fa-fire-alt',
+        unit: 'Wochen',
+        infoText: `Trainiere mindestens 3-mal pro Woche, um deinen Streak zu erhöhen. 
+        Alle 10 Wochen verdienst du einen Joker, der dich bei Krankheit oder Urlaub 
+        vor dem Zurücksetzen schützt.`, 
+        levels: [
+            { threshold: 4, label: 'Bronze', desc: '4 Wochen am Stück' },
+            { threshold: 12, label: 'Silber', desc: '12 Wochen am Stück' },
+            { threshold: 26, label: 'Gold', desc: '26 Wochen am Stück' },
+            { threshold: 52, label: 'Platin', desc: 'Ein ganzes Jahr Disziplin!' }
+        ],
+        getCurrentLevel: function() {
+            const streak = calculateWeeklyStreak(trainingHistory, 3);            
+            // Berechnung der verfügbaren Joker: 
+            // Pro 10 Wochen Streak ein Joker, minus die bereits verbrauchten (falls du das trackst)
+            // Einfachheitshalber hier die Logik:            
+            const availableFreezes = Math.min(Math.floor(streak / 10), 3); 
+            
+            const reached = this.levels.filter(l => streak >= l.threshold);
+            return { 
+                index: reached.length, 
+                currentVal: streak, 
+                freezes: availableFreezes // Wir geben die Joker-Anzahl mit
+            };
         }
     }
 ];
-
 
 
                                                                                         {}
@@ -304,6 +320,7 @@ async function endWorkout() {
         // Das Alert ersetzen wir durch den Wechsel zum Dashboard
         renderWorkoutDetails(0, true);
         showMainContent('history');
+        checkAchievementLevelUp();
     }
 }
 
@@ -1462,13 +1479,27 @@ function updateDashboard() {
         bodyCard.classList.add('clickable-card');
     }
 
-    // Achievements 
-    // In updateDashboard() am Ende:
-    const unlockedCount = ACHIEVEMENT_LIST.filter(ach => ach.getCurrentLevel() !== null).length;
+    // Achievements Update im Dashboard
+    const currentTotalLevels = ACHIEVEMENT_LIST.reduce((sum, ach) => {
+        const levelData = ach.getCurrentLevel();
+        return sum + (levelData ? levelData.index : 0);
+    }, 0);
+
+    // Die maximal mögliche Anzahl an Leveln berechnen
+    const maxPossibleLevels = ACHIEVEMENT_LIST.reduce((sum, ach) => {
+        return sum + ach.levels.length;
+    }, 0);
+
     const dashAchievCount = document.getElementById('dash-achievements-count');
+    const dashAchievProgress = document.getElementById('dash-achievements-progress');
 
     if (dashAchievCount) {
-        dashAchievCount.innerText = `${unlockedCount}/${ACHIEVEMENT_LIST.length}`;
+        dashAchievCount.innerText = `${currentTotalLevels} / ${maxPossibleLevels}`;
+    }
+
+    if (dashAchievProgress) {
+        const percentage = (currentTotalLevels / maxPossibleLevels) * 100;
+        dashAchievProgress.style.width = `${percentage}%`;
     }
 }
 
@@ -1772,18 +1803,26 @@ function handleImport() {
         const reader = new FileReader();
         reader.onload = (e) => {
             try {
-                const data = JSON.parse(e.target.result);
+                const importedData = JSON.parse(e.target.result);
                 
-                // Direktes Mapping der Keys aus deiner Backup-Struktur
-                if (data.exercises) localStorage.setItem('exercise_names', JSON.stringify(data.exercises));
-                if (data.history)   localStorage.setItem('workout_history', JSON.stringify(data.history));
-                if (data.bodyStats) localStorage.setItem('body_stats', JSON.stringify(data.bodyStats));
-                if (data.settings)  localStorage.setItem('app_settings', JSON.stringify(data.settings));
+                // 1. Check: Ist es das Format mit Metadaten (WORKOUT_HISTORY_BACKUP)?
+                if (importedData.type === "WORKOUT_HISTORY_BACKUP" && Array.isArray(importedData.data)) {
+                    localStorage.setItem('workout_history', JSON.stringify(importedData.data));
+                } 
+                // 2. Check: Ist es das flache Format (dein aktuelles Full-Backup)?
+                else {
+                    if (importedData.history)   localStorage.setItem('workout_history', JSON.stringify(importedData.history));
+                    if (importedData.exercises) localStorage.setItem('exercise_names', JSON.stringify(importedData.exercises));
+                    if (importedData.bodyStats) localStorage.setItem('body_stats', JSON.stringify(importedData.bodyStats));
+                    if (importedData.settings)  localStorage.setItem('app_settings', JSON.stringify(importedData.settings));
+                }
 
-                alert("Import erfolgreich! Seite wird neu geladen.");
+                alert("Import erfolgreich!");
                 window.location.reload();
+
             } catch (err) {
-                alert("Fehler: Ungültige Datei!");
+                console.error("Import-Fehler:", err);
+                alert("Fehler: Die Datei konnte nicht gelesen werden oder ist beschädigt.");
             }
         };
         reader.readAsText(file);
@@ -2698,11 +2737,14 @@ function renderAchievements() {
     container.innerHTML = '';
 
     ACHIEVEMENT_LIST.forEach(ach => {
-        const levelData = ach.getCurrentLevel(); // Hol dir das aktuelle Level
-        const isUnlocked = levelData !== null;
+        const levelData = ach.getCurrentLevel(); 
+        // WICHTIG: isUnlocked ist jetzt wahr, wenn index > 0
+        const isUnlocked = levelData && levelData.index > 0;
         
+        // Wenn entsperrt, holen wir uns die Daten des aktuell erreichten Levels aus dem Array
+        const currentLevelInfo = isUnlocked ? ach.levels[levelData.index - 1] : null;
+
         const card = document.createElement('div');
-        // Wir fügen eine Klasse für das Level hinzu (z.B. level-1, level-2)
         const levelClass = isUnlocked ? `level-${levelData.index}` : 'locked';
         card.className = `card-template achievement-card ${levelClass}`;
         
@@ -2711,15 +2753,17 @@ function renderAchievements() {
                 <i class="fa-solid ${ach.icon}"></i>
             </div>
             <div class="achievement-info">
-                <span class="stat-label">${ach.title} ${isUnlocked ? '(' + levelData.label + ')' : ''}</span>
-                <div class="achievement-desc">${isUnlocked ? levelData.desc : 'Noch nicht erreicht'}</div>
+                <span class="stat-label">
+                    ${ach.title} ${isUnlocked ? '(' + currentLevelInfo.label + ')' : ''}
+                </span>
+                <div class="achievement-desc">
+                    ${isUnlocked ? currentLevelInfo.desc : 'Noch nicht erreicht'}
+                </div>
             </div>
             ${isUnlocked ? `<div class="badge-level">Lvl ${levelData.index}</div>` : ''}
         `;
 
-        // Click-Event für die Vorschau der nächsten Stufen
         card.onclick = () => showAchievementDetails(ach);
-        
         container.appendChild(card);
     });
 }
@@ -3538,40 +3582,76 @@ function showAchievementDetails(ach) {
     const current = ach.getCurrentLevel();
     const nextIndex = current ? current.index : 0;
     const next = ach.levels[nextIndex];
-    
-    const currentVal = (ach.id === 'ton_club') ? getVolumeStats().total : trainingHistory.length;
-    const unit = (ach.id === 'ton_club') ? 'kg' : 'Workouts';
+    const currentVal = current ? current.currentVal : 0;
+    const unit = ach.unit || 'Workouts';
 
     let levelsHtml = ach.levels.map((lvl, idx) => {
-    const isReached = current && idx < current.index;
-    const isNext = idx === nextIndex;
-    return `
-        <div class="achievement-modal-level-row ${isReached ? 'reached' : ''} ${isNext ? 'next' : ''}">
-            <div class="level-indicator">${idx + 1}</div>
-            <div class="level-text">
-                <div class="level-label">${lvl.label}</div>
-                <div class="level-desc">${lvl.threshold.toLocaleString()} ${unit}</div>
+        const isReached = current && idx < current.index;
+        const isNext = idx === nextIndex;
+        return `
+            <div class="achievement-modal-level-row ${isReached ? 'reached' : ''} ${isNext ? 'next' : ''}">
+                <div class="level-indicator">${idx + 1}</div>
+                <div class="level-text">
+                    <div class="level-label">${lvl.label}</div>
+                    <div class="level-desc">${lvl.threshold.toLocaleString()} ${unit}</div>
+                </div>
+                ${isReached ? '<i class="fa-solid fa-circle-check"></i>' : ''}
             </div>
-            ${isReached ? '<i class="fa-solid fa-circle-check"></i>' : ''}
-        </div>
-    `;
+        `;
     }).join('');
 
-    modalBody.innerHTML = `
-        <div class="achievement-modal-header">
-            <i class="fa-solid ${ach.icon} achievement-modal-main-icon"></i>
-            <h3>${ach.title}</h3>
-        </div>
-        <div class="achievement-modal-progress-info">
-            ${next ? `Noch <strong>${(next.threshold - currentVal).toLocaleString()} ${unit}</strong> bis zum nächsten Level!` : 'Maximale Stufe erreicht! 🔥'}
-        </div>
-        <div class="achievement-modal-levels-list">
-            ${levelsHtml}
+    // Joker-Logik: Nur für den Wochen-Krieger anzeigen
+let freezeHtml = '';
+if (ach.id === 'weekly_streak') {
+    const freezes = current.freezes || 0;
+    freezeHtml = `
+        <div class="freeze-display" style="margin-bottom: 15px; text-align: center;">
+            <div style="display: flex; gap: 8px; justify-content: center; margin-bottom: 5px;">
+                ${[1, 2, 3].map(i => `
+                    <i class="fa-solid fa-snowflake" style="
+                        font-size: 1.2rem; 
+                        color: ${i <= freezes ? '#3498db' : '#222'}; 
+                        text-shadow: ${i <= freezes ? '0 0 8px rgba(52, 152, 219, 0.6)' : 'none'};
+                        transition: all 0.3s ease;
+                    "></i>
+                `).join('')}
+            </div>
+            <span style="font-size: 0.7rem; color: #777; text-transform: uppercase; letter-spacing: 0.5px;">
+                ${freezes} von 3 Joker aktiv
+            </span>
         </div>
     `;
+}
+
+modalBody.innerHTML = `
+    <div class="achievement-modal-header" style="display: flex; flex-direction: column; align-items: center;">
+        <i class="fa-solid ${ach.icon} achievement-modal-main-icon"></i>
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+            <h3 style="margin: 0;">${ach.title}</h3>
+            <i class="fa-solid fa-circle-info info-trigger" style="cursor: pointer; color: var(--accent-color); font-size: 0.9rem;"></i>
+        </div>
+        
+        ${freezeHtml} </div>
+    
+    <div id="ach-info-text" class="hidden" style="background: rgba(255,255,255,0.05); padding: 12px; border-radius: 8px; font-size: 0.8rem; margin-bottom: 15px; color: #bbb; line-height: 1.4; border-left: 3px solid var(--accent-color);">
+        ${ach.infoText || 'Keine weitere Information verfügbar.'}
+    </div>
+
+    <div class="achievement-modal-progress-info">
+        ${next ? `Noch <strong>${(next.threshold - currentVal).toLocaleString()} ${unit}</strong> bis zum nächsten Level!` : 'Maximale Stufe erreicht! 🔥'}
+    </div>
+    <div class="achievement-modal-levels-list">
+        ${levelsHtml}
+    </div>
+`;
+
+    // Click-Event für das Info-Icon
+    modalBody.querySelector('.info-trigger').onclick = (e) => {
+        const infoBox = document.getElementById('ach-info-text');
+        infoBox.classList.toggle('hidden');
+    };
 
     modal.classList.remove('hidden');
-    // Kurze Verzögerung für die Animation
     setTimeout(() => modal.classList.add('active'), 10);
 }
 
@@ -3579,6 +3659,112 @@ function closeAchievementModal() {
     const modal = document.getElementById('achievement-modal');
     modal.classList.remove('active');
     setTimeout(() => modal.classList.add('hidden'), 300);
+}
+
+function calculateWeeklyStreak(history, minWorkouts) {
+    if (!history || history.length === 0) return 0;
+
+    // 1. Gruppierung nach Wochen (wie gehabt)
+    const weeksMap = {};
+    history.forEach(workout => {
+        const date = new Date(workout.date);
+        const year = date.getFullYear();
+        const target = new Date(date.valueOf());
+        const dayNr = (date.getDay() + 6) % 7;
+        target.setDate(target.getDate() - dayNr + 3);
+        const firstThursday = target.valueOf();
+        target.setMonth(0, 1);
+        if (target.getDay() !== 4) target.setMonth(0, 1 + ((4 - target.getDay() + 7) % 7));
+        const weekNum = 1 + Math.ceil((firstThursday - target) / 604800000);
+        const weekKey = `${year}-${weekNum}`;
+        weeksMap[weekKey] = (weeksMap[weekKey] || 0) + 1;
+    });
+
+    let currentStreak = 0;
+    let availableFreezes = 0;
+    let checkDate = new Date();
+    
+    // Wir fangen heute an und gehen rückwärts
+    while (true) {
+        const target = new Date(checkDate.valueOf());
+        const dayNr = (checkDate.getDay() + 6) % 7;
+        target.setDate(target.getDate() - dayNr + 3);
+        const firstThursday = target.valueOf();
+        target.setMonth(0, 1);
+        if (target.getDay() !== 4) target.setMonth(0, 1 + ((4 - target.getDay() + 7) % 7));
+        const weekKey = `${checkDate.getFullYear()}-${1 + Math.ceil((firstThursday - target) / 604800000)}`;
+
+        if (weeksMap[weekKey] >= minWorkouts) {
+            currentStreak++;
+            // Alle 10 "echten" Wochen gibt es einen Joker (max 3 bunkern)
+            if (currentStreak % 10 === 0) {
+                availableFreezes = Math.min(availableFreezes + 1, 3);
+            }
+            checkDate.setDate(checkDate.getDate() - 7);
+        } else {
+            // Aktuelle Woche darf noch "unvollständig" sein
+            const isToday = new Date().toDateString() === checkDate.toDateString();
+            if (isToday && currentStreak === 0) {
+                checkDate.setDate(checkDate.getDate() - 7);
+                continue;
+            }
+
+            // Joker-Check: Haben wir eine Woche frei?
+            if (availableFreezes > 0) {
+                availableFreezes--; // Joker verbrauchen
+                checkDate.setDate(checkDate.getDate() - 7); // Diese Woche überspringen
+                continue; // Streak bricht nicht ab!
+            }
+            
+            break; // Keine Joker mehr, Streak gerissen
+        }
+    }
+    return currentStreak;
+}
+
+function checkAchievementLevelUp() {
+    // 1. Aktuelle Summe berechnen
+    const currentTotalLevels = ACHIEVEMENT_LIST.reduce((sum, ach) => {
+        const levelData = ach.getCurrentLevel();
+        return sum + (levelData ? levelData.index : 0);
+    }, 0);
+
+    // 2. Alten Stand aus localStorage holen
+    const lastSavedLevels = parseInt(localStorage.getItem('last_total_levels')) || 0;
+
+    // 3. Vergleichen
+    if (currentTotalLevels > lastSavedLevels) {
+        // Wir haben ein Level Up!
+        showLevelUpNotification(currentTotalLevels - lastSavedLevels);
+        
+        // Neuen Stand speichern
+        localStorage.setItem('last_total_levels', currentTotalLevels);
+    }
+}
+
+function showLevelUpNotification(count) {
+    // Erstelle ein temporäres Notification-Element
+    const notification = document.createElement('div');
+    notification.className = 'level-up-toast';
+    notification.innerHTML = `
+        <div class="level-up-icon">
+            <i class="fa-solid fa-medal"></i>
+        </div>
+        <div class="level-up-text">
+            <strong>Level Up!</strong>
+            <span>${count > 1 ? count + ' neue Meilensteine' : 'Neuer Meilenstein'} erreicht!</span>
+        </div>
+    `;
+
+    document.body.appendChild(notification);
+
+    // Animation: Einblenden, kurz warten, ausblenden
+    setTimeout(() => notification.classList.add('show'), 100);
+    
+    setTimeout(() => {
+        notification.classList.remove('show');
+        setTimeout(() => notification.remove(), 500);
+    }, 4000);
 }
 
 
@@ -3639,7 +3825,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initEquipmentSelector(); 
     initEquipmentFilter();   
     setInterval(updateHeaderClock, 1000);
-    updateHeaderClock();
+    updateHeaderClock();    
     
 //--- NAVIGATION ---// 
                                                                         {}             

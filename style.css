@@ -1507,49 +1507,117 @@ button.filter-chip.active {
 
 /* ACHIEVEMENTS on DASHBOARD */
 
-.achievement-shortcut {
-    margin: 200px auto 20px auto; /* Viel Abstand nach oben, damit es "alleine" steht */
-    padding: 8px 12px;
+.dashboard-header-container {
     display: flex;
-    width: fit-content; /* Passt sich dem Inhalt an, statt volle Breite */
-    min-width: 160px;   /* Verhindert, dass es zu sehr schrumpft */
-    max-width: 200px; 
-    justify-content: center; /* Inhalt mittig */
-    gap: 15px;          /* Abstand zwischen Icon-Text und Stats */
+    flex-direction: column;
+    align-items: center; /* Alles zentrieren */
+    margin-bottom: 25px;
+}
+
+.achievement-mini-banner {
+    display: flex;
     align-items: center;
-    background: transparent;
-    border: none;
-    font-size: 0.75rem; /* Noch etwas kleiner */
-    color: rgba(149, 165, 166, 0.4); /* Sehr dezentes Grau */
-    transition: all 0.2s ease;
+    gap: 12px;
+    background: rgba(255, 255, 255, 0.02); /* Fast unsichtbar */
+    border: 1px solid rgba(255, 255, 255, 0.05); /* Sehr feine Linie */
+    border-radius: 20px; /* Pillen-Form */
+    padding: 4px 12px;
+    margin-top: 5px; /* Rückt näher an das Logo ran */
     cursor: pointer;
+    max-width: fit-content; /* Verhindert volle Breite */
+    transition: all 0.2s ease;
 }
 
-.shortcut-content {
+.achievement-mini-banner:active {
+    background: rgba(255, 255, 255, 0.08);
+    transform: scale(0.95);
+}
+
+.achievement-mini-banner i {
+    color: var(--accent);
+    font-size: 0.8rem; /* Kleineres Icon */
+    opacity: 0.8;
+}
+
+.mini-banner-info {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 8px;
 }
 
-.shortcut-content i {
+#dash-achievements-count {
+    font-size: 0.75rem;
+    color: var(--text-mid);
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+.mini-progress-track {
+    width: 40px; /* Sehr schmaler Balken */
+    height: 3px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.mini-progress-fill {
+    height: 100%;
+    background: var(--accent);
+    box-shadow: 0 0 5px var(--accent);
+    transition: width 1s ease-in-out;
+}
+/* LEVEL UP */
+
+.level-up-toast {
+    position: fixed;
+    top: -100px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--bg-card);
+    border: 2px solid var(--accent);
+    border-radius: 15px;
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5), 0 0 15px rgba(var(--accent-rgb), 0.3);
+    z-index: 9999;
+    transition: top 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+}
+
+.level-up-toast.show {
+    top: 20px;
+}
+
+.level-up-icon {
+    font-size: 1.8rem;
     color: var(--accent);
-    opacity: 1; /* Icon fast durchsichtig */
+    animation: pulse-gold 2s infinite;
+}
+
+.level-up-text {
+    display: flex;
+    flex-direction: column;
+}
+
+.level-up-text strong {
+    color: var(--accent);
+    text-transform: uppercase;
     font-size: 1rem;
 }
 
-.shortcut-stats {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    font-weight: 600;
-    color: rgba(255, 255, 255, 0.3); /* Die Zahlen auch sehr dezent */
+.level-up-text span {
+    color: var(--text-high);
+    font-size: 0.85rem;
 }
 
-/* Kleiner Effekt beim Drauftippen */
-.achievement-shortcut:active {
-    transform: scale(0.95);
-    color: rgba(255, 255, 255, 0.6);
+@keyframes pulse-gold {
+    0% { transform: scale(1); filter: drop-shadow(0 0 0px var(--accent)); }
+    50% { transform: scale(1.1); filter: drop-shadow(0 0 8px var(--accent)); }
+    100% { transform: scale(1); filter: drop-shadow(0 0 0px var(--accent)); }
 }
+
+
 
 /* ==========================================
    5. FOCUS PICKER OVERLAY
@@ -3245,16 +3313,32 @@ button.filter-chip.active {
     cursor: pointer;
 }
 
+/* Icons in den Karten */
 .settings-card i {
     font-size: 1.5rem;
     color: var(--accent);
-    flex-shrink: 0; /* Verhindert, dass das Icon schrumpft */
+    
+    /* Flex-Zentrierung für das Icon selbst */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    
+    width: 25px; /* Etwas schmaler für kompakten Look */
+    margin-right: 10px; /* Text näher ran (vorher 15px) */
+    text-align: center;
 }
 
-.settings-card:active, .settings-card:hover {
-    transform: scale(0.97);
-    background: rgba(255, 255, 255, 0.08) !important;
+/* Label Text */
+.settings-label {
+    font-size: 1rem;
+    font-weight: 500;
+    line-height: 1; /* Verhindert unnötige Abstände oben/unten */
 }
+
+.settings-card:active {
+    transform: scale(0.97);
+    background: rgba(255, 255, 255, 0.08);
+} 
 
 /* Header im Modal */
 .modal-header {
@@ -3476,28 +3560,6 @@ button.filter-chip.active {
 .settings-card:hover {
     background-color: rgba(255, 255, 255, 0.05);
     transform: translateX(5px); /* Kleiner Slide-Effekt beim Hover */
-}
-
-/* Icons in den Karten */
-.settings-card i {
-    font-size: 1.4rem;
-    color: var(--accent);
-    
-    /* Flex-Zentrierung für das Icon selbst */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    
-    width: 25px; /* Etwas schmaler für kompakten Look */
-    margin-right: 10px; /* Text näher ran (vorher 15px) */
-    text-align: center;
-}
-
-/* Label Text */
-.settings-label {
-    font-size: 1rem;
-    font-weight: 500;
-    line-height: 1; /* Verhindert unnötige Abstände oben/unten */
 }
 
 /* Spezielles Styling für das Bestätigungs-Modal (confirm-card) */
@@ -3780,6 +3842,10 @@ button.filter-chip.active {
     justify-content: center;
 }
 
+.achievement-card:active {
+    scale: 0.97;
+}
+
 /* Locked & Unlocked bleiben gleich, aber wir passen die Borders an */
 .achievement-card.locked {
     opacity: 0.4;
@@ -3990,11 +4056,14 @@ button.filter-chip.active {
 .level-label { font-weight: bold; font-size: 0.9rem; }
 .level-desc { font-size: 0.75rem; color: #888; }
 
+#ach-info-text.hidden {
+    display: none;
+}
 
-
-
-
-
+.info-trigger:hover {
+    transform: scale(1.2);
+    transition: transform 0.2s ease;
+}
 
 /* ==========================================
    14 FOOTER META INFORMATION
@@ -4208,47 +4277,3 @@ sortable-ghost {
         transform: scale(3); /* Explodiert förmlich in den Zuschauer rein */
     }
 }
-
-
-
-/* APP LOCK 
-
-#app-lock-screen {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background: #121212; 
-    z-index: 20000; 
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 20px;
-    transition: opacity 0.5s ease;
-}
-
-.lock-input {
-    background: rgba(255,255,255,0.1);
-    border: 1px solid var(--accent);
-    color: white;
-    padding: 15px;
-    border-radius: 12px;
-    text-align: center;
-    font-size: 1.5rem;
-    width: 200px;
-    outline: none;
-}
-
-.lock-btn {
-    background: var(--accent);
-    color: black;
-    border: none;
-    padding: 12px 30px;
-    border-radius: 8px;
-    font-weight: bold;
-    cursor: pointer;
-}
-
-*/

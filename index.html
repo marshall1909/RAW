@@ -103,13 +103,28 @@
 
         <section id="content-dashboard" class="tab-content">
 
-            <div class="dashboard-title">
-                <img src="./logo/RAW/RAW.svg" alt="Logo" class="dashboard-logo">
+            <!-- logo & achievementbar -->
 
+            <div class="dashboard-header-container">
+                <div class="dashboard-title">
+                    <img src="./logo/RAW/RAW.svg" alt="Logo" class="dashboard-logo">
+                </div>
+
+                <div class="achievement-mini-banner" onclick="showMainContent('achievements')">
+                    <i class="fa-solid fa-trophy"></i>
+                    <div class="mini-banner-info">
+                        <span id="dash-achievements-count">0 / 16</span>
+                        <div class="mini-progress-track">
+                            <div id="dash-achievements-progress" class="mini-progress-fill" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div class="dashboard-grid">
+
                 <!-- sessions -->
+
                 <div class="card-template card-accent-left border-accent stat-card sessions">
                     <span class="stat-label">Workouts</span>
                     <div class="stat-value" id="dash-session-count">--</div>
@@ -135,17 +150,9 @@
                 </div>
             </div>
 
-            <!-- achievements -->
 
-            <div class="achievement-shortcut card-template" onclick="showMainContent('achievements')">
-                <div class="shortcut-content">
-                    <i class="fa-solid fa-medal"></i>
-                    <span>Deine Erfolge</span>
-                </div>
-                <div class="shortcut-stats">
-                    <span id="dash-achievements-count">0/0</span>                    
-                </div>
-            </div>
+
+
         </section>
 
 
@@ -453,7 +460,7 @@
             </button>
         </nav>
         <div class="meta">
-            <p class="app-version">beta v0.8.0</p>
+            <p class="app-version">beta v0.8.1</p>
             <p class="copyright">&copy; by Marshall</p>
         </div>
     </footer>
